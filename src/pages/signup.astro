@@ -1,0 +1,18 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import '../global.css';
+import SignupPage from '@/components/Signup.tsx';
+const token = Astro.cookies.get("token");
+if (token) {
+  return Astro.redirect("/dashboard");
+}
+---
+<html>
+    <head>
+        <title>Signup</title>
+    </head>
+</html>
+
+<Layout>
+    <SignupPage client:load />
+</Layout>

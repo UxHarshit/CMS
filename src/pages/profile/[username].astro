@@ -1,0 +1,32 @@
+---
+import "../../global.css";
+import ProfilePage from "../../components/Profile";
+import Layout from "../../layouts/Layout.astro";
+import UserNotFound from "../../components/UserNotFound";
+const { username } = Astro.params;
+
+const data = await fetch(`http://localhost:5000/api/users/profile/${username}`);
+var user;
+if (data.ok) {
+  user = await data.json();
+} else {
+  user = null;
+}
+---
+
+{user && <title>{user.name} (@{user.username})</title>
+  <meta name="description" content={user.bio} />
+  <meta property="og:title" content={user.name} />
+  <meta property="og:description" content={user.bio} />
+  <meta property="og:image" content={user.avatar} />
+  <meta property="og:url" content={`http://localhost:3000/profile/${user.username}`} />
+}
+{!user && <title>User Not Found</title>}
+<Layout>
+  {user && 
+    <ProfilePage client:load user={user} />
+  }
+  {!user && 
+    <UserNotFound client:load />
+  }
+</Layout>

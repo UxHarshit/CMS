@@ -1,0 +1,25 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import "../global.css";
+import LoginPage from "@/components/Login.tsx";
+
+// Redirect to dashboard if user is already logged in
+
+const token = Astro.cookies.get("token");
+if (token) {
+  return Astro.redirect("/dashboard");
+}
+
+---
+
+
+
+<html>
+  <head>
+    <title>Login</title>
+  </head>
+</html>
+
+<Layout>
+  <LoginPage client:load />
+</Layout>
