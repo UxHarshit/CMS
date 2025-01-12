@@ -7,6 +7,9 @@ dist/
 # dependencies
 node_modules/
 
+# ignore cms.zip file
+CMS.zip
+
 # logs
 npm-debug.log*
 yarn-debug.log*
