@@ -6,7 +6,7 @@ import { CalendarDays } from 'lucide-react';
 
 
 export default function Page({ props }: { props: any }) {
-    const { name, email, image, username } = props.data;
+    const { name, email, image, username, isAdmin } = props.data;
     const { contests } = props.data;
     const { running, past } = contests;
     
@@ -16,7 +16,8 @@ export default function Page({ props }: { props: any }) {
         totalParticipants: number,
         description: string,
         startDate: string,
-        endDate: string
+        endDate: string,
+        isAdmin: boolean
     }
 
     function getDate(start: string, end: string) {
@@ -78,7 +79,7 @@ export default function Page({ props }: { props: any }) {
             <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
 
                 {/* Header */}
-                <Nav name={name} email={email} image={image} username={username} />
+                <Nav name={name} email={email} image={image} username={username} isAdmin={isAdmin} />
 
                 {/* Login */}
                 <div className='container mx-auto py-24 px-4'>

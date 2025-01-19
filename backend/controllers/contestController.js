@@ -1,46 +1,11 @@
-import { Contests, Contest_Participants, User, UserProfile, Contest_Problems, Problems, TestCases } from '../models/index.js';
+import {Contest_Participants, User, UserProfile, Contest_Problems, Problems, TestCases,Contests } from '../models/index.js';
 import jwt from 'jsonwebtoken';
 
 const joinContestController = async (req, res) => {
-    const { contestId } = req.params;
-    if (!contestId) {
-        return res.status(400).json({ message: 'Invalid call  err-m1' })
-    }
+    const user = req.user;
+    const contestId = req.params.contestId;
 
-    const contest = await Contests.findOne({
-        where: { id: contestId }
-    });
-
-    if (!contest) {
-        return res.status(404).json({ message: 'Contest not found' });
-    }
-
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader) {
-        return res.status(401).json({ message: 'Authorization header missing' });
-    }
-
-    const token = authHeader.split(' ')[1];
     try {
-        const payload = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findOne({
-            where: { email: payload.email, username: payload.username },
-            attributes: ['id']
-        });
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const contestParticipant = await Contest_Participants.findOne({
-            where: { contestId, userId: user.id }
-        });
-
-        if (contestParticipant) {
-            return res.status(400).json({ message: 'Already joined the contest' });
-        }
-
         await Contest_Participants.create({
             contestId,
             userId: user.id
@@ -49,7 +14,7 @@ const joinContestController = async (req, res) => {
         return res.status(201).json({ message: 'Contest joined successfully' });
 
     } catch (error) {
-        return res.status(401).json({ message: 'Auth failed' });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 }
 
@@ -183,13 +148,13 @@ const problemController = async (req, res) => {
             where: { contestId }
         });
 
-        
+
 
         if (!contestParticipant) {
             return res.status(400).json({ message: 'Not a participant of the contest' });
         }
 
-        if(contestParticipant.is_disqualified){
+        if (contestParticipant.is_disqualified) {
             return res.status(400).json({ message: 'You are disqualified from the contest' });
         }
 
@@ -206,7 +171,7 @@ const problemController = async (req, res) => {
 
         const problemsDetails = await Problems.findAll({
             where: { id: problemIds },
-            attributes: ['id', 'title', 'description', 'difficulty', 'time_limit', 'memory_limit', 'constraints']
+            attributes: ['id', 'title', 'description', 'difficulty', 'time_limit', 'memory_limit', 'constraints','input_format','output_format']
         });
 
         if (!problemsDetails) {
@@ -228,6 +193,8 @@ const problemController = async (req, res) => {
                 difficulty: problem.difficulty,
                 time_limit: problem.time_limit,
                 memory_limit: problem.memory_limit,
+                input_format: problem.input_format,
+                output_format: problem.output_format,
                 testCases: testCases,
                 constraints: problem.constraints.split('\n')
             });

@@ -20,6 +20,8 @@ interface Problem {
         input: string;
         output: string;
     }[];
+    input_format: string;
+    output_format: string;
     hint: string;
 }
 
@@ -389,7 +391,22 @@ export default function ProblemPage(props: {
                                         <p>{currentQuestionIdx.description}</p>
                                     </CardContent>
                                 </Card>
-
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Input Format</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p>{currentQuestionIdx.input_format}</p>
+                                    </CardContent>
+                                </Card>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Output Format</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p>{currentQuestionIdx.output_format}</p>
+                                    </CardContent>
+                                </Card>
                                 <Card>
                                     <CardHeader>
                                         <CardTitle>Constraints</CardTitle>
@@ -422,7 +439,7 @@ export default function ProblemPage(props: {
                                                         <Copy className='h-4 w-4' />
                                                     </Button>
                                                 </div>
-                                                <pre className='p-4 bg-secondary rounded-sm text-sm'>
+                                                <pre className='p-4 bg-secondary rounded-sm text-sm overflow-scroll'>
                                                     {Array.isArray(currentQuestionIdx.testCases)
                                                         ? currentQuestionIdx.testCases.map(tc => tc.input).join('\n')
                                                         : currentQuestionIdx.testCases.input}
@@ -454,14 +471,7 @@ export default function ProblemPage(props: {
                                         </div>
                                     </CardContent>
                                 </Card>
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>Hint</CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p>{currentQuestionIdx.hint}</p>
-                                    </CardContent>
-                                </Card>
+                                
                             </div>
 
                             {/* Right Side */}
@@ -505,6 +515,8 @@ export default function ProblemPage(props: {
                                                 tabsize: 4,
                                                 scrollBeyondLastLine: false,
                                                 insertSpaces: true,
+                                                // Disable command f1
+                                                
                                                 autoIndent: 'full',
                                                 scrollbar: {
                                                     alwaysConsumeMouseWheel: false
@@ -555,26 +567,26 @@ export default function ProblemPage(props: {
                                                         <div className="mt-4 space-y-2">
                                                             <div>
                                                                 <h4 className="font-semibold">Expected Output:</h4>
-                                                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200
+                                                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll
                                                                 ">{expectedOutput}</pre>
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-semibold">Your Output:</h4>
-                                                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200">{actualOutput}</pre>
+                                                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">{actualOutput}</pre>
                                                             </div>
                                                         </div>
                                                     )}
                                                     {submission === 'Compilation Error' && compileOutput && (
                                                         <div className="mt-4">
                                                             <h4 className="font-semibold">Compile Output:</h4>
-                                                            <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200">{compileOutput}</pre>
+                                                            <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">{compileOutput}</pre>
                                                         </div>
                                                     )}
                                                     {submission.includes("Runtime Error")
                                                         && compileOutput && (
                                                             <div className="mt-4">
                                                                 <h4 className="font-semibold">Runtime Error:</h4>
-                                                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200">{compileOutput}</pre>
+                                                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">{compileOutput}</pre>
                                                             </div>
                                                         )}
                                                 </div>

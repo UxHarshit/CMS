@@ -38,7 +38,7 @@ export default function Nav({ name, email, image, username, isAdmin }: { name: s
         <>
             <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <a className="flex items-center space-x-2" href="/" >
+                    <a className="flex items-center space-x-2" href="/admin/dashboard" >
                         <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                         <span className="text-xl font-bold text-gray-800 dark:text-white">CodeContest Pro</span>
                     </a>
@@ -74,15 +74,13 @@ export default function Nav({ name, email, image, username, isAdmin }: { name: s
                                         Home
                                     </a>
                                 </DropdownMenuItem>
-                                {
-                                    isAdmin && (
-                                        <DropdownMenuItem asChild >
-                                            <a href={`/admin/dashboard`} >
-                                                Admin Dashboard
-                                            </a>
-                                        </DropdownMenuItem>
-                                    )
-                                }
+
+                                <DropdownMenuItem asChild >
+                                    <a href={`/dashboard`} >
+                                        Dashboard
+                                    </a>
+                                </DropdownMenuItem>
+
                                 <DropdownMenuItem asChild >
                                     <a href={`/profile/${username}`} >
                                         Profile

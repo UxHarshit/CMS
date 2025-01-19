@@ -13,6 +13,11 @@ Contest_Participants.init(
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        isFirstTime: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+        },
         rank: {
             type: DataTypes.INTEGER,
             allowNull: true,

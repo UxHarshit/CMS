@@ -1,0 +1,69 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../global.css";
+import ManageUsersPage from "@/components/Admin/manageUsers.tsx";
+import jwt from "jsonwebtoken";
+
+const token = Astro.cookies.get("token");
+var decoded_token = null;
+if (!token) {
+  return Astro.redirect("/login");
+} else {
+  try {
+    const decoded = jwt.verify(
+      token.value,
+      "7feb11e09142b4a8170f3c7570377d4fa35f2dcf031434fcd9f018e84c70450eaf63525dc803be4634f8b1d9a9cb66a51ba67e4024deec583a4586ae0e060ce5"
+    );
+    if (
+      typeof decoded !== "string" &&
+      decoded.exp &&
+      decoded.exp < Date.now() / 1000
+    ) {
+      Astro.cookies.delete("token");
+      return Astro.redirect("/login");
+    } else {
+      decoded_token = decoded;
+    }
+  } catch (error) {
+    Astro.cookies.delete("token");
+    return Astro.redirect("/login");
+  }
+}
+var out = null;
+if (decoded_token) {
+  out = await fetch("http://localhost:5000/api/users/dashboard", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.value}`,
+    },
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        return new Response("Error: " + response.statusText);
+      }
+    })
+    .then((data) => {
+      return {
+        props: { data },
+      };
+    })
+    .catch((error) => {
+      return new Response("Error: " + error);
+    });
+
+  if (out instanceof Response) {
+    return Astro.redirect("/login");
+  }
+
+  if (out.props.data.isAdmin === false) {
+    return Astro.redirect("/login");
+  }
+}
+---
+
+<Layout>
+  <ManageUsersPage client:load {...out as any} />
+</Layout>

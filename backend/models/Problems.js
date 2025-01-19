@@ -41,7 +41,6 @@ Problems.init(
     {
         sequelize,
         modelName: 'Problems',
-        timestamps: false,
     }
 );
 
