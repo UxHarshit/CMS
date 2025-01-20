@@ -122,6 +122,10 @@ export default function ManageProblemsPage({ props }: { props: any }) {
         window.location.href = "/admin/addProblem";
     }
 
+    const handleEditProblem = (id: number) => {
+        window.location.href = `/admin/editProblem?id=${id}`;
+    }
+
     return (
         <div>
             <Toaster />
@@ -159,23 +163,30 @@ export default function ManageProblemsPage({ props }: { props: any }) {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {problems.map((problem) => (
-                                        <TableRow key={problem.id}>
-                                            <TableCell>{problem.name}</TableCell>
-                                            <TableCell>{problem.difficulty}</TableCell>
-                                            <TableCell>{problem.createdAt}</TableCell>
-                                            <TableCell>
-                                                <Button>
-                                                    <Pencil className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleDeleteProblem(problem.id)}
-                                                    variant="destructive" className="ml-2">
-                                                    <Trash className="w-4 h-4" />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                    {problems
+                                        .filter(problem => 
+                                            problem.name.toLowerCase().includes(search.toLowerCase()) ||
+                                            problem.difficulty.toLowerCase().includes(search.toLowerCase())
+                                        )
+                                        .map(problem => (
+                                            <TableRow key={problem.id}>
+                                                <TableCell>{problem.name}</TableCell>
+                                                <TableCell>{problem.difficulty}</TableCell>
+                                                <TableCell>{problem.createdAt}</TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        onClick={() => handleEditProblem(problem.id)}
+                                                        >
+                                                        <Pencil className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        onClick={() => handleDeleteProblem(problem.id)}
+                                                        variant="destructive" className="ml-2">
+                                                        <Trash className="w-4 h-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                 </TableBody>
                             </Table>
 

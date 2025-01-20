@@ -1,109 +1,121 @@
-import Nav from "./nav";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import { Toaster } from "../ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { useState } from "react";
+import { Toaster } from "../ui/toaster";
+import Nav from "./nav";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../ui/tabs";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Button } from "../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface TestCase {
     id: number;
     input: string;
     output: string;
+    isPublic: boolean;
     points: number;
 }
 
-export default function AddProblem({ props }: { props: any }) {
-
+export default function EditProblemPage({ props }: { props: any }) {
     const { name, email, image, username, isAdmin } = props.data;
+    const { toast } = useToast();
+    
 
     const [question, setQuestion] = useState({
         title: "",
         description: "",
         difficulty: "",
         constraints: "",
-        inputFormat: "",
-        outputFormat: "",
-        sampleInput: "",
-        sampleOutput: "",
-        timeLimit: 0,
-        memoryLimit: 0,
+        input_format: "",
+        output_format: "",
+        sample_input: "",
+        sample_output: "",
+        time_limit: 0,
+        memory_limit: 0,
     });
-
     const [testCases, setTestCases] = useState<TestCase[]>([]);
+  
 
-    const { toast } = useToast();
-
-    const handleSubmit = () => {
-        if (testCases.length === 0) {
-            toast({
-                title: "Please add at least one test case",
-                description: "Please add at least one test case",
-            })
-        }
-        const questionData = {
-            title: question.title,
-            description: question.description,
-            difficulty: question.difficulty,
-            constraints: question.constraints,
-            input_format: question.inputFormat,
-            output_format: question.outputFormat,
-            time_limit: question.timeLimit,
-            memory_limit: question.memoryLimit,
-            public_test_cases: {
-                input: question.sampleInput,
-                output: question.sampleOutput,
-            },
-            test_cases: testCases.map((testCase) => ({
-                input: testCase.input,
-                output: testCase.output,
-                points: testCase.points,
-            }))
-        }
-
-        console.log(questionData);
-
-        const token = localStorage.getItem("token");
-        if (!token) {
-            window.location.href = "/login";
-        }
-
-        fetch("http://localhost:5000/api/admin/addProblem", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(questionData),
-        }).then(response => {
-            if (response.ok) {
-                toast({
-                    title: "Problem added successfully",
-                    description: "Problem added successfully",
-                })
-            } else {
-                toast({
-                    title: "Error",
-                    description: "Error adding problem",
-                })
-            }
-        }).catch(error => {
-            toast({
-                title: "Error",
-                description: "Error adding problem",
-            })
-        })
-    }
 
     function preventDefault(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
     }
 
+    useEffect(() => {
+        console.log(props)
+        const question = props.question;
+        setQuestion(question);
+        const testCases = props.testCases;
+        setTestCases(testCases);
+
+        for (const testCase of testCases) {
+            if (testCase.isPublic) {
+                question.sample_input = testCase.input;
+                question.sample_output = testCase.output;
+                testCases.splice(testCases.indexOf(testCase), 1);
+            }
+        }
+        setTestCases(testCases);
+    }, []);
+
+ 
+
+    function handleSubmit() {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            window.location.href = "/login";
+        }
+        const id = props.id;
+        if (!id) {
+            toast({
+                title: "Error updating question",
+                description: "Please try again",
+            })
+            return;
+        }
+
+        testCases.push({
+            id: testCases.length + 1,
+            input: question.sample_input,
+            output: question.sample_output,
+            isPublic: true,
+            points: 0
+        });
+
+    
+
+        fetch(`http://localhost:5000/api/problems/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ question, testCases})
+        }).then((res) => {
+            if (res.ok) {
+                toast({
+                    title: "Question updated successfully",
+                    description: "Your question has been updated successfully",
+                })
+                window.location.href = "/admin/manageProblems";
+            }
+            else {
+                toast({
+                    title: "Error updating question",
+                    description: "Please try again",
+                })
+            }
+        }).catch((err) => {
+            toast({
+                title: "Error updating question",
+                description: "Please try again",
+            })
+        })
+    }
     return (
         <div>
             <Toaster />
@@ -156,8 +168,8 @@ export default function AddProblem({ props }: { props: any }) {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="constraints">Time Limit(in seconds) <span className="text-red-500">*</span></Label>
-                                            <Input type="number" id="timeLimit"
-                                                value={question.timeLimit}
+                                            <Input type="number" id="time_limit"
+                                                value={question.time_limit}
                                                 className=""
                                                 min={0}
                                                 onBlur={(e) => {
@@ -166,33 +178,33 @@ export default function AddProblem({ props }: { props: any }) {
                                                             title: "Time limit must be greater than 0",
                                                             description: "Please enter a valid time limit",
                                                         })
-                                                        setQuestion({ ...question, timeLimit: 0 })
+                                                        setQuestion({ ...question, time_limit: 0 })
                                                     }
                                                     else {
-                                                        setQuestion({ ...question, timeLimit: parseInt(e.target.value) })
+                                                        setQuestion({ ...question, time_limit: parseInt(e.target.value) })
                                                     }
                                                 }}
                                                 onChange={(e) => {
-                                                    setQuestion({ ...question, timeLimit: parseInt(e.target.value) })
+                                                    setQuestion({ ...question, time_limit: parseInt(e.target.value) })
                                                 }
 
                                                 } required />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="constraints">Memory Limit(in MB) <span className="text-red-500">*</span></Label>
-                                            <Input type="number" id="memoryLimit"
-                                                value={question.memoryLimit}
+                                            <Input type="number" id="memory_limit"
+                                                value={question.memory_limit}
                                                 min={100}
                                                 onBlur={(e) => {
                                                     if (parseInt(e.target.value) < 100) {
                                                         toast({
                                                             title: "Memory limit must be greater than 100",
                                                         })
-                                                        setQuestion({ ...question, memoryLimit: 100 })
+                                                        setQuestion({ ...question, memory_limit: 100 })
                                                     }
                                                 }}
                                                 onChange={(e) => {
-                                                    setQuestion({ ...question, memoryLimit: parseInt(e.target.value) })
+                                                    setQuestion({ ...question, memory_limit: parseInt(e.target.value) })
                                                 }
                                                 }
                                                 required />
@@ -201,31 +213,31 @@ export default function AddProblem({ props }: { props: any }) {
                                     <div className="grid grid-cols-2 gap-4" >
                                         <div className="space-y-2">
                                             <Label htmlFor="constraints">Input Format <span className="text-red-500">*</span></Label>
-                                            <Textarea id="inputFormat"
-                                                value={question.inputFormat}
-                                                onChange={(e) => setQuestion({ ...question, inputFormat: e.target.value })}
+                                            <Textarea id="input_format"
+                                                value={question.input_format}
+                                                onChange={(e) => setQuestion({ ...question, input_format: e.target.value })}
                                                 required />
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="constraints">Output Format <span className="text-red-500">*</span></Label>
-                                            <Textarea id="outputFormat"
-                                                value={question.outputFormat}
-                                                onChange={(e) => setQuestion({ ...question, outputFormat: e.target.value })}
+                                            <Textarea id="output_format"
+                                                value={question.output_format}
+                                                onChange={(e) => setQuestion({ ...question, output_format: e.target.value })}
                                                 required />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="constraints">Sample Input <span className="text-red-500">*</span></Label>
-                                            <Textarea id="sampleInput"
-                                                value={question.sampleInput}
-                                                onChange={(e) => setQuestion({ ...question, sampleInput: e.target.value })}
+                                            <Textarea id="sample_input"
+                                                value={question.sample_input}
+                                                onChange={(e) => setQuestion({ ...question, sample_input: e.target.value })}
                                                 required />
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="constraints">Sample Output <span className="text-red-500">*</span></Label>
-                                            <Textarea id="sampleOutput"
-                                                value={question.sampleOutput}
-                                                onChange={(e) => setQuestion({ ...question, sampleOutput: e.target.value })}
+                                            <Textarea id="sample_output"
+                                                value={question.sample_output}
+                                                onChange={(e) => setQuestion({ ...question, sample_output: e.target.value })}
                                                 required />
 
                                         </div>
@@ -248,6 +260,7 @@ export default function AddProblem({ props }: { props: any }) {
                                                         id: 1,
                                                         input: "",
                                                         output: "",
+                                                        isPublic: false,
                                                         points: 0
                                                     }])
                                                 }
@@ -256,9 +269,11 @@ export default function AddProblem({ props }: { props: any }) {
                                                         id: testCases.length + 1,
                                                         input: "",
                                                         output: "",
+                                                        isPublic: false,
                                                         points: 0
                                                     }])
                                                 }
+                                                
                                                 console.log(testCases)
                                             }}>
                                                 <Plus className="w-4 h-4" />
@@ -278,8 +293,11 @@ export default function AddProblem({ props }: { props: any }) {
                                                             variant="destructive"
                                                             onClick={() => {
                                                                 const newTestCases = [...testCases];
-                                                                newTestCases.splice(index, 1);
+                                                                // add the test case to the deleted test cases array
+                                                                
+                                                                newTestCases.splice(index, 1); // remove the test case from the array
                                                                 setTestCases(newTestCases);
+                                                                
                                                             }}>
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>
@@ -324,6 +342,7 @@ export default function AddProblem({ props }: { props: any }) {
                     </Tabs>
                 </form>
             </div>
+
         </div>
     )
 }

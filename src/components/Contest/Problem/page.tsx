@@ -281,7 +281,7 @@ export default function ProblemPage(props: {
 
         } else {
             const data = await response.json()
-            if(data.errCode = "end01"){
+            if (data.errCode = "end01") {
                 window.location.href = '/contest/' + window.location.pathname.split('/')[2] + '/leaderboard'
             } else {
                 setError([data.message])
@@ -471,7 +471,7 @@ export default function ProblemPage(props: {
                                         </div>
                                     </CardContent>
                                 </Card>
-                                
+
                             </div>
 
                             {/* Right Side */}
@@ -516,7 +516,7 @@ export default function ProblemPage(props: {
                                                 scrollBeyondLastLine: false,
                                                 insertSpaces: true,
                                                 // Disable command f1
-                                                
+
                                                 autoIndent: 'full',
                                                 scrollbar: {
                                                     alwaysConsumeMouseWheel: false

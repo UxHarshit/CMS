@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Problems, Contest_Problems, Contests, TestCases } from '../models/index.js';
-
+import sequelize  from '../config/database.js';
 
 
 const JUDGE0_API = "http://139.59.69.105:2358/submissions";
@@ -102,4 +102,57 @@ const runProblemController = async (req, res) => {
 
 };
 
-export { runProblemController };
+const getProblemController = async (req, res) => {
+    const { id } = req.params;
+    const question = await Problems.findOne({ where: { id } });
+    const testCases = await TestCases.findAll({ where: { problemId: id } });
+
+    const data = {
+        question,
+        testCases
+    }
+
+    res.status(200).json(data);
+}
+
+const updateProblemController = async (req, res) => {
+    const { id } = req.params;
+    const { question, testCases} = req.body;
+    const transaction = await sequelize.transaction();
+
+    try{
+
+        const problem = await Problems.findOne({ where: { id } });
+        if(!problem)
+        {
+            return res.status(404).json({ message: 'Problem not found' });
+        }
+        
+        // delete the old test cases
+        await TestCases.destroy({ where: { problemId: id }, transaction });
+
+        
+        await Problems.update(question, { where: { id }, transaction });
+
+        // create the new test cases
+        for (const testCase of testCases) {
+            await TestCases.create({
+                problemId: id,
+                input: testCase.input,
+                output: testCase.output,
+                isPublic: testCase.isPublic,
+                points: testCase.points,
+            }, { transaction });
+        }
+
+        await transaction.commit();
+
+        res.status(200).json({ message: 'Problem updated successfully' });
+    } catch (error) {
+        console.log(error);
+        await transaction.rollback();
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+export { runProblemController, getProblemController, updateProblemController };

@@ -31,7 +31,7 @@ if (!token) {
 }
 var out = null;
 if (decoded_token) {
-  out = await fetch("http://localhost:5000/api/users/dashboard", {
+  out = await fetch("http://localhost:5000/api/users/basicUserInfo", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

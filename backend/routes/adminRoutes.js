@@ -1,5 +1,5 @@
 import express from 'express';
-import authMiddleware from '../middlewares/auth.js';
+import { authMiddleware } from '../middlewares/auth.js';
 import basicUserInfo from '../middlewares/basicUserInfo.js';
 
 import { userListController, problemListController, addProblemController, deleteProblemController } from '../controllers/adminController.js';

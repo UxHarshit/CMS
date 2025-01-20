@@ -1,9 +1,15 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import "../../global.css";
-import AdminPage from "@/components/Admin/page.tsx";
+import EditProblemPage from "@/components/Admin/editProblem.tsx";
 import jwt from "jsonwebtoken";
 import { Debug } from "astro:components";
+
+const id = Astro.url.searchParams.get("id");
+
+if (!id) {
+  return Astro.redirect("/admin/manageProblems");
+}
 
 const token = Astro.cookies.get("token");
 var decoded_token = null;
@@ -46,9 +52,24 @@ if (decoded_token) {
         return new Response("Error: " + response.statusText);
       }
     })
-    .then((data) => {
+    .then(async (data) => {
+      const problem = await fetch(`http://localhost:5000/api/problems/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token.value}`,
+        },
+      });
+
+      const { question, testCases } = await problem.json();
+
       return {
-        props: { data },
+        props: { 
+            data,
+            id,
+            question,
+            testCases
+         },
       };
     })
     .catch((error) => {
@@ -63,10 +84,8 @@ if (decoded_token) {
     return Astro.redirect("/login");
   }
 }
-
 ---
 
 <Layout>
-    <AdminPage client:load {... out as any} />  
-  </Layout>
-  
+  <EditProblemPage client:load {...out as any} />
+</Layout>
