@@ -512,7 +512,7 @@ export default function ProblemPage(props: {
                                             options={{
                                                 minimap: { enabled: false },
                                                 fontSize: 14,
-                                                tabsize: 4,
+                                                tabSize: 4,
                                                 scrollBeyondLastLine: false,
                                                 insertSpaces: true,
                                                 // Disable command f1
