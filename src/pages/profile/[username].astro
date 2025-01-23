@@ -5,7 +5,9 @@ import Layout from "../../layouts/Layout.astro";
 import UserNotFound from "../../components/UserNotFound";
 const { username } = Astro.params;
 
-const data = await fetch(`http://localhost:5000/api/users/profile/${username}`);
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
+
+const data = await fetch(`${baseUrl}/api/users/profile/${username}`);
 var user;
 if (data.ok) {
   user = await data.json();
@@ -19,7 +21,7 @@ if (data.ok) {
   <meta property="og:title" content={user.name} />
   <meta property="og:description" content={user.bio} />
   <meta property="og:image" content={user.avatar} />
-  <meta property="og:url" content={`http://localhost:3000/profile/${user.username}`} />
+  <meta property="og:url" content={`${baseUrl}/profile/${user.username}`} />
 }
 {!user && <title>User Not Found</title>}
 <Layout>

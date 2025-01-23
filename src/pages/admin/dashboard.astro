@@ -5,6 +5,9 @@ import AdminPage from "@/components/Admin/page.tsx";
 import jwt from "jsonwebtoken";
 import { Debug } from "astro:components";
 
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
+
+
 const token = Astro.cookies.get("token");
 var decoded_token = null;
 if (!token) {
@@ -32,7 +35,7 @@ if (!token) {
 }
 var out = null;
 if (decoded_token) {
-  out = await fetch("http://localhost:5000/api/users/basicUserInfo", {
+  out = await fetch(`${baseUrl}/api/users/basicUserInfo`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -64,7 +67,6 @@ if (decoded_token) {
   }
 }
 
-const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 ---
 
 <Layout>

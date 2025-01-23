@@ -5,6 +5,8 @@ import ContestPage from "@/components/Contest/Rules/page.tsx";
 import jwt from "jsonwebtoken";
 import { Debug } from "astro:components";
 
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
+
 const id = Astro.params.id;
 
 if (!id) {
@@ -41,7 +43,7 @@ var out = {
     data : null
 }
 if (decoded_token) {
-  out = await fetch("http://localhost:5000/api/contest/rules", {
+  out = await fetch(`${baseUrl}/api/contest/rules`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -67,7 +69,6 @@ if (decoded_token) {
     }
 }
 
-const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 ---
 
 

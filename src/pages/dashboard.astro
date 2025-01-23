@@ -5,6 +5,9 @@ import DashboardPage from "@/components/Dashboard/page.tsx";
 import jwt from "jsonwebtoken";
 import { Debug } from "astro:components";
 
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
+
+
 // Get the token
 const token = Astro.cookies.get("token");
 var decoded_token = null;
@@ -33,7 +36,7 @@ if (!token) {
 }
 var out = null;
 if (decoded_token) {
-  out = await fetch("http://localhost:5000/api/users/dashboard", {
+  out = await fetch(`${baseUrl}/api/users/dashboard`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -61,7 +64,6 @@ if (decoded_token) {
   }
 }
 
-const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 ---
 
 <title>Dashboard</title>
