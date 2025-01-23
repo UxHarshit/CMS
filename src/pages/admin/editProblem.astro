@@ -55,7 +55,7 @@ if (decoded_token) {
       }
     })
     .then(async (data) => {
-      const problem = await fetch(`http://localhost:5000/api/problems/${id}`, {
+      const problem = await fetch(`${baseUrl}/api/problems/${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
