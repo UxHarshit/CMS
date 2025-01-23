@@ -6,6 +6,8 @@ const token = Astro.cookies.get("token");
 if (token) {
   return Astro.redirect("/dashboard");
 }
+
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 ---
 <html>
     <head>
@@ -14,5 +16,5 @@ if (token) {
 </html>
 
 <Layout>
-    <SignupPage client:load />
+    <SignupPage client:load baseUrl={baseUrl} />
 </Layout>

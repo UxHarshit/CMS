@@ -84,8 +84,10 @@ if (decoded_token) {
     return Astro.redirect("/login");
   }
 }
+
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 ---
 
 <Layout>
-  <EditProblemPage client:load {...out as any} />
+  <EditProblemPage client:load {...out as any} baseUrl={baseUrl} />
 </Layout>

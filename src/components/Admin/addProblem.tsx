@@ -18,7 +18,7 @@ interface TestCase {
     points: number;
 }
 
-export default function AddProblem({ props }: { props: any }) {
+export default function AddProblem({ props, baseUrl }: { props: any, baseUrl: string }) {
 
     const { name, email, image, username, isAdmin } = props.data;
 
@@ -73,7 +73,7 @@ export default function AddProblem({ props }: { props: any }) {
             window.location.href = "/login";
         }
 
-        fetch("http://localhost:5000/api/admin/addProblem", {
+        fetch(`${baseUrl}/api/admin/addProblem`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

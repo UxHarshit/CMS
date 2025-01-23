@@ -31,7 +31,7 @@ export default function ProblemPage(props: {
     image: string,
     username: string
     , problems: Problem[]
-}) {
+    ,baseUrl: string}) {
 
     const [questions, setQuestions] = useState<Problem[]>(props.problems)
     const [name, setName] = useState<string>("")
@@ -52,7 +52,7 @@ export default function ProblemPage(props: {
         const fetchQuestions = async () => {
             try {
                 const contestId = window.location.pathname.split('/')[2]
-                const response = await fetch('http://localhost:5000/api/contest/problems',
+                const response = await fetch(`${props.baseUrl}/api/contest/problems`,
                     {
                         'method': 'POST',
                         'headers': {
@@ -241,7 +241,7 @@ export default function ProblemPage(props: {
         setLoading(true)
 
 
-        const response = await fetch('http://localhost:5000/api/problems/run', {
+        const response = await fetch(`${props.baseUrl}/api/problems/run`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { CalendarDays } from 'lucide-react';
 
 
-export default function Page({ props }: { props: any }) {
+export default function Page({ props, baseUrl }: { props: any, baseUrl: string }) {
     const { name, email, image, username, isAdmin } = props.data;
     const { contests } = props.data;
     const { running, past } = contests;

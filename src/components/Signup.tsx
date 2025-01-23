@@ -11,7 +11,7 @@ import { CommandEmpty, CommandGroup, CommandItem, CommandList } from "./ui/comma
 import { cn } from "@/lib/utils";
 
 
-export default function SignupPage() {
+export default function SignupPage({ baseUrl }: { baseUrl: string }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
@@ -117,7 +117,7 @@ export default function SignupPage() {
 
         setError('');
 
-        await fetch('http://localhost:5000/api/auth/register', {
+        await fetch(`${baseUrl}/api/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

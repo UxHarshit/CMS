@@ -10,6 +10,8 @@ if (token) {
   return Astro.redirect("/dashboard");
 }
 
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
+
 ---
 
 
@@ -21,5 +23,5 @@ if (token) {
 </html>
 
 <Layout>
-  <LoginPage client:load />
+  <LoginPage client:load baseUrl={baseUrl} />
 </Layout>

@@ -60,10 +60,12 @@ if (decoded_token) {
     return Astro.redirect("/login");
   }
 }
+
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 ---
 
 <title>Dashboard</title>
 
 <Layout>
-  <DashboardPage client:load {...out as any} />
+  <DashboardPage client:load {...out as any} baseUrl={baseUrl}/>
 </Layout>

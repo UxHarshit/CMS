@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@radix-ui/react-label";
 import { Input } from "./ui/input";
 
-export default function LoginPage() {
+export default function LoginPage({ baseUrl }: { baseUrl: string }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [enableSubmit, setEnableSubmit] = useState(true);
@@ -86,7 +86,7 @@ export default function LoginPage() {
         setError('');
 
         // localhost:5000/api/auth/login
-        fetch('http://localhost:5000/api/auth/login', {
+        fetch(`${baseUrl}/api/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

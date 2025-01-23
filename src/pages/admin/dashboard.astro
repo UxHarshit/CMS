@@ -64,9 +64,10 @@ if (decoded_token) {
   }
 }
 
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 ---
 
 <Layout>
-    <AdminPage client:load {... out as any} />  
+    <AdminPage client:load {... out as any} baseUrl={baseUrl} />  
   </Layout>
   

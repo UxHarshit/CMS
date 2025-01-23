@@ -17,7 +17,7 @@ interface UserStructure {
     isBanned: boolean;
 }
 
-export default function ManageUsers({ props }: { props: any }) {
+export default function ManageUsers({ props, baseUrl }: { props: any, baseUrl: string }) {
     const { name, email, image, username, isAdmin } = props.data;
 
     const { toast } = useToast();
@@ -45,7 +45,7 @@ export default function ManageUsers({ props }: { props: any }) {
         if (!token) {
             window.location.href = "/login";
         }
-        fetch("http://localhost:5000/api/admin/UserList", {
+        fetch(`${baseUrl}/api/admin/UserList`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

@@ -14,7 +14,7 @@ interface Problem {
     createdAt: string;
 }
 
-export default function ManageProblemsPage({ props }: { props: any }) {
+export default function ManageProblemsPage({ props, baseUrl }: { props: any, baseUrl : string }) {
 
 
     const { name, email, image, username, isAdmin } = props.data;
@@ -34,7 +34,7 @@ export default function ManageProblemsPage({ props }: { props: any }) {
         if (!token) {
             window.location.href = "/login";
         }
-        fetch("http://localhost:5000/api/admin/problemList", {
+        fetch(`${baseUrl}/api/admin/problemList`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -77,7 +77,7 @@ export default function ManageProblemsPage({ props }: { props: any }) {
         if (!token) {
             window.location.href = "/login";
         }
-        fetch("http://localhost:5000/api/admin/deleteProblem", {
+        fetch(`${baseUrl}/api/admin/deleteProblem`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

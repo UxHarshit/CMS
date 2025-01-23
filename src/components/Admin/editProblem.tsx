@@ -19,7 +19,7 @@ interface TestCase {
     points: number;
 }
 
-export default function EditProblemPage({ props }: { props: any }) {
+export default function EditProblemPage({ props, baseUrl }: { props: any, baseUrl : string }) {
     const { name, email, image, username, isAdmin } = props.data;
     const { toast } = useToast();
     
@@ -85,10 +85,11 @@ export default function EditProblemPage({ props }: { props: any }) {
             isPublic: true,
             points: 0
         });
+        
 
     
 
-        fetch(`http://localhost:5000/api/problems/${id}`, {
+        fetch(`${baseUrl}/api/problems/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
