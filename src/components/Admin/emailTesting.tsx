@@ -100,7 +100,9 @@ export default function EmailTesting({ props, baseUrl }: { props: any, baseUrl: 
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                <Button
+                  disabled={loading}
+                 type="submit" className="w-full">
                   <Mail className="mr-2 h-4 w-4" />
                   Send Test Email
                 </Button>

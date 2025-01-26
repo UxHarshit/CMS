@@ -4,19 +4,12 @@ import basicUserInfo from '../middlewares/basicUserInfo.js';
 import os from 'os';
 import calculateCpuPercentage from '../helpers/cpuUsage.js';
 import calculateTraffic from '../helpers/getNetwork.js';
-
-import nodemailer from 'nodemailer';
+import { sendMail } from '../controllers/emailController.js';
+import { Logs } from '../models/index.js';
 
 import { userListController, problemListController, addProblemController, deleteProblemController } from '../controllers/adminController.js';
 const router = express.Router();
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.SERVER_MAIL,
-        pass: process.env.SERVER_MAIL_PASSWORD
-    }
-})
 
 const isAdmin = async (req, res, next) => {
     if (!req.user.profile.isAdmin) {
@@ -55,32 +48,42 @@ router.post('/deleteProblem', authMiddleware, basicUserInfo, isSuperAdmin, async
 })
 
 router.post('/email', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
-    const { recipient, subject, body } = req.body;
+    await sendMail(req, res);
+});
 
-    if (!recipient || !subject || !body) {
-        return res.status(400).json({
-            success: false,
-            message: "Please provide all the required fields"
-        });
-    }
 
-    const mailOptions = {
-        from: process.env.SERVER_MAIL,
-        to: recipient,
-        subject: subject,
-        text: body
-    }
+router.post('/logs', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    // Get Recent Logs
+    const {rangeStart, rangeEnd} = req.query;
     try {
-        await transporter.sendMail(mailOptions);
+        let logs;
+        if (rangeStart && rangeEnd) {
+            logs = await Logs.findAll({
+                where: {
+                    createdAt: {
+                        $between: [new Date(rangeStart), new Date(rangeEnd)]
+                    }
+                },
+                order: [
+                    ['createdAt', 'DESC']
+                ]
+            });
+        } else {
+            logs = await Logs.findAll({
+                limit: 20,
+                order: [
+                    ['createdAt', 'DESC']
+                ]
+            });
+        }
         res.status(200).json({
             success: true,
-            message: "Email sent successfully"
+            logs: logs
         });
     } catch (error) {
-        console.log(error);
         res.status(500).json({
             success: false,
-            message: "Failed to send email"
+            message: "Internal server error"
         });
     }
 });

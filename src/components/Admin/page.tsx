@@ -1,4 +1,4 @@
-import { CalendarDays, Code, Cpu, User, UserCog } from "lucide-react";
+import { CalendarDays, Code, Cpu, FileText, User, UserCog } from "lucide-react";
 import { Button } from "../ui/button";
 import Nav from "./nav";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -21,7 +21,7 @@ export default function Admin({ props }: { props: any }) {
                                 <Cpu className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                            <div className="text-2xl font-bold">{cpu_usage}</div>
+                                <div className="text-2xl font-bold">{cpu_usage}</div>
                             </CardContent>
                         </Card>
                         <Card>
@@ -30,10 +30,10 @@ export default function Admin({ props }: { props: any }) {
                                 <Cpu className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                            <div className="text-2xl font-bold">
-                                {curr_ram_usage}
-                            </div>
-                            <p className="text-xs text-muted-foreground">of {total_ram} total</p>
+                                <div className="text-2xl font-bold">
+                                    {curr_ram_usage}
+                                </div>
+                                <p className="text-xs text-muted-foreground">of {total_ram} total</p>
                             </CardContent>
                         </Card>
                     </div>
@@ -43,7 +43,7 @@ export default function Admin({ props }: { props: any }) {
 
                     <div className="space-y-4">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-bold">Quick Actions</h2>
+                            <h2 className="text-xl font-bold">All Actions</h2>
                         </div>
                     </div>
 
@@ -75,6 +75,12 @@ export default function Admin({ props }: { props: any }) {
                             <a href="/admin/email/emailTesting">
                                 <UserCog className="mr-2 w-4 h-4" />
                                 Email Testing
+                            </a>
+                        </Button>
+                        <Button asChild>
+                            <a href="/admin/viewLogs">
+                                <FileText className="mr-2 w-4 h-4" />
+                                View Logs
                             </a>
                         </Button>
 

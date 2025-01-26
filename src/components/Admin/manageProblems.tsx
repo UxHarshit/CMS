@@ -86,11 +86,14 @@ export default function ManageProblemsPage({ props, baseUrl }: { props: any, bas
             body: JSON.stringify({ id }),
         })
             .then(response => {
-                if (response.ok) {
-                    toast({
-                        title: "Problem deleted successfully",
-                    })
-                }
+                toast({
+                    title: "Success",
+                    description: "Problem deleted successfully",
+                    variant: "default",
+                    duration: 3000,
+                })
+                window.location.reload();
+
             })
             .catch(error => {
                 toast({

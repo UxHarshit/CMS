@@ -7,6 +7,7 @@ import Contest_Problems from "./Contest_Problems.js";
 import TestCases from "./TestCases.js";
 import UserRole from "./UserRole.js";
 import Contest_Participants from "./Contest_Participants.js";
+import Logs from "./Logs.js";
 
 
 User.hasOne(UserProfile, {
@@ -120,4 +121,6 @@ UserRole.belongsTo(User, {
     onDelete: 'CASCADE',
 });
 
-export { User, UserProfile, Institution, Contests, Problems, Contest_Problems, TestCases , Contest_Participants, UserRole };
+
+
+export { User, UserProfile, Institution, Contests, Problems, Contest_Problems, TestCases , Contest_Participants, UserRole, Logs };
