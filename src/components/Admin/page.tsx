@@ -71,6 +71,12 @@ export default function Admin({ props }: { props: any }) {
                                 Manage Problems
                             </a>
                         </Button>
+                        <Button asChild>
+                            <a href="/admin/email/emailTesting">
+                                <UserCog className="mr-2 w-4 h-4" />
+                                Email Testing
+                            </a>
+                        </Button>
 
                     </div>
                 </div>
