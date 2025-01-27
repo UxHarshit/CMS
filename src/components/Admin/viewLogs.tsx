@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Label } from "@radix-ui/react-label";
 import { Input } from "../ui/input";
 import { Table, TableRow, TableHead, TableHeader, TableBody, TableCell } from "../ui/table";
+import { Dialog, DialogTitle, DialogContent, DialogDescription, DialogHeader, DialogTrigger } from "../ui/dialog";
 
 interface Log {
     event_type: string;
@@ -15,13 +16,19 @@ interface Log {
     endpoint: string;
     ip_address: string;
     createdAt: string;
+    user_agent: string;
+    details: string;
 }
 
-export default function ViewLogs({ props, baseUrl }: { props: any, baseUrl: string }) {
+
+
+
+export default function ViewLogs({ props, baseUrl, token }: { props: any, baseUrl: string, token: string }) {
     const { name, email, image, username, isAdmin } = props.data;
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
+    const [dialogLoading, setDialogLoading] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -69,6 +76,11 @@ export default function ViewLogs({ props, baseUrl }: { props: any, baseUrl: stri
             .catch(error => {
                 console.error(error);
             });
+
+
+
+
+
         setLoading(false);
     }
 
@@ -95,6 +107,37 @@ export default function ViewLogs({ props, baseUrl }: { props: any, baseUrl: stri
         a.download = 'logs.json';
         a.click();
         URL.revokeObjectURL(url);
+    }
+
+    const [dialogInfo, setDialogInfo] = useState({
+        ip: "",
+        location: "",
+        isp: "",
+        organization: ""
+    })
+
+    const fetchIpDetails = async (ip: string) => {
+        ip = ip.split(":").pop() || ip;
+        ip = ip.trim().replace("::ffff:", "");
+        const data = await fetch(`https://ipapi.co/${ip}/json/`
+        ).then(response => response.json()).catch(error => {
+            console.error(error);
+        });
+        return data;
+    }
+
+    const getIpDetails = async (ip: string) => {
+        setDialogLoading(true);
+        const data = await fetchIpDetails(ip);
+        if (data) {
+            setDialogInfo({
+                ip: data["ip"],
+                location: data["city"] + ", " + data["region"] + ", " + data["country_name"],
+                isp: data["org"],
+                organization: data["org"] // Fixed organization shorthand
+            });
+        }
+        setDialogLoading(false);
     }
 
     return (
@@ -145,10 +188,13 @@ export default function ViewLogs({ props, baseUrl }: { props: any, baseUrl: stri
                                                         <RefreshCcw className="mr-2 h-4 w-4" />
                                                         Refresh
                                                     </Button>
-                                                    <Button className="ml-2 mt-2" onClick={handleDownload} variant="outline">
+                                                    <Button
+                                                        className="ml-2 mt-2"
+                                                        onClick={handleDownload} disabled={loading}>
                                                         <Download className="mr-2 h-4 w-4" />
-                                                        Download Logs
+                                                        Download
                                                     </Button>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -169,14 +215,83 @@ export default function ViewLogs({ props, baseUrl }: { props: any, baseUrl: stri
                                                 <TableRow key={log.createdAt}>
                                                     <TableCell>{
                                                         new Date(log.createdAt).toLocaleString()
-                                                        }</TableCell>
+                                                    }</TableCell>
                                                     <TableCell>{log.event_type}</TableCell>
                                                     <TableCell>{log.endpoint}</TableCell>
                                                     <TableCell>{log.ip_address}</TableCell>
-                                                    <Button variant="outline" className="m-2">
-                                                        <Eye className="w-4 h-4" />
-                                                        <p>View</p>
-                                                    </Button>
+                                                    <Dialog>
+                                                        <DialogTrigger className="m-2" asChild>
+                                                            <Button variant="outline" onClick={() => getIpDetails(log.ip_address)}>
+                                                                <Eye className="mr-2 h-4 w-4" />
+                                                                View
+                                                            </Button>
+                                                        </DialogTrigger>
+
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Detailed Info</DialogTitle>
+                                                                <DialogDescription>
+                                                                    Information about the log
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+
+                                                            {dialogLoading ? (
+                                                                <div className="flex justify-center items-center h-64">
+                                                                    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900">
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="overflow-y-auto h-96 p-2" >
+                                                                    <div className="">
+                                                                        <p className="text-lg font-bold">IP Information</p>
+                                                                        <div className="flex items-center space-x-4">
+                                                                            <div>
+                                                                                <p>IP Address: {log.ip_address}</p>
+                                                                                <p>Location: {dialogInfo.location}</p>
+                                                                            </div>
+                                                                            <div>
+                                                                                <p>ISP: {dialogInfo.isp}</p>
+                                                                                <p>Organization: {dialogInfo.organization}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="w-full h-px bg-gray-300 my-4"></div>
+                                                                    <p className="text-lg font-bold">Request Information</p>
+                                                                    <div className="flex flex-col space-y-2">
+                                                                        <p> User ID: {log.user_id || "Not available"}</p>
+                                                                        <p> User Agent: {log.user_agent}</p>
+                                                                        <p> Endpoint: {log.endpoint}</p>
+                                                                        <p> Event Type: {log.event_type}</p>
+                                                                        <p> Created At: {new Date(log.createdAt).toLocaleString()}</p>
+                                                                    </div>
+
+                                                                    <div className="w-full h-px bg-gray-300 my-4"></div>
+                                                                    <p className="text-lg font-bold">Request Details</p>
+                                                                    <div className="flex flex-col space-y-2 overflow-y-auto">
+                                                                        <p> Method: {
+                                                                            JSON.parse(log.details).method || "Not available"
+                                                                        }</p>
+                                                                        <p> Body:</p>
+                                                                        {/* <code> of body */}
+                                                                        <div className="p-2 rounded-lg bg-gray-100 text-sm text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+                                                                            <code>
+                                                                                {JSON.stringify(JSON.parse(log.details).body, null, 2)}
+                                                                            </code>
+                                                                        </div>
+
+                                                                        <p> Query:
+                                                                            <code>
+                                                                                {JSON.stringify(JSON.parse(log.details).query, null, 2)}
+                                                                            </code>
+                                                                        </p>
+                                                                    </div>
+
+                                                                </div>
+                                                            )
+                                                            }
+
+                                                        </DialogContent>
+                                                    </Dialog>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -186,7 +301,7 @@ export default function ViewLogs({ props, baseUrl }: { props: any, baseUrl: stri
                             </Card>
                         </>
                     )}
-            </div>
+            </div >
         </>
     );
 }

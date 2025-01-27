@@ -64,8 +64,10 @@ if (decoded_token) {
   }
 }
 
+const ipinfo_token = import.meta.env.IPINFO_TOKEN;
+
 ---
 
 <Layout>
-  <ViewLogsPage client:load {...out as any} baseUrl={baseUrl} />
+  <ViewLogsPage client:load {...out as any} baseUrl={baseUrl} token={ipinfo_token} />
 </Layout>
