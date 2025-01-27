@@ -20,7 +20,8 @@ const loginController = async(req, res) => {
         }
         const payload = {
             email: user.email,
-            username : user.username
+            username : user.username,
+            ip : req.ip,
         }
         const token = jwt.sign(payload, process.env.JWT_SECRET, {
             expiresIn: '20h',

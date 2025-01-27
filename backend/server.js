@@ -28,7 +28,6 @@ const saveLog = async (logEntry) => {
 
 app.use((req, res, next) => {
 
-    // Skips if the request is from localhost or server ip
     if (req.ip === '::1' || req.ip === '::ffff:127.0.0.1' || req.ip === '::ffff:172.17.0.1') {
         return next();
     }    
