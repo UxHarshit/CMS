@@ -1,0 +1,9 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import "../global.css";
+import NotFoundPage from "../components/notFound.tsx";
+---
+
+<Layout title="404">
+  <NotFoundPage client:load />
+</Layout>
