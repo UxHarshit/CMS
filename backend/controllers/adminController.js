@@ -1,4 +1,4 @@
-import { User, UserProfile, Problems,TestCases } from '../models/index.js';
+import { User, UserProfile, Problems,TestCases,Contests,Institution } from '../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../config/database.js';
 
@@ -117,4 +117,45 @@ const addProblemController = async (req, res) => {
     }
 
 }
-export { userListController, problemListController, addProblemController , deleteProblemController};
+
+
+const getAllContest = async (req, res) => {
+    try {
+        const { rangeStart, rangeEnd } = req.body;
+        const contests = await Contests.findAll({
+            where: {
+                id: {
+                    [Op.between]: [rangeStart, rangeEnd]
+                },
+            },
+            include: [{
+                model: Institution,
+                as: 'institution',
+                attributes: ['name']
+            }]
+        });
+        
+
+        const structuredContests = contests.map(contest => {
+            return {
+                id: contest.id,
+                name: contest.name,
+                description: contest.description,
+                startDate: contest.startDate,
+                endDate: contest.endDate,
+                institution: contest.institution.name
+            }
+        });
+
+        res.json(structuredContests);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+
+    }
+}
+export { userListController, problemListController, addProblemController , deleteProblemController,getAllContest};

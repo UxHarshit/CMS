@@ -4,7 +4,7 @@ import { User } from '../models/index.js';
 import { configDotenv } from 'dotenv';
 configDotenv();
 
-const loginController = async(req, res) => {
+const loginController = async (req, res) => {
     try {
         const { email, password } = req.body;
         if (!email || !password) {
@@ -20,8 +20,8 @@ const loginController = async(req, res) => {
         }
         const payload = {
             email: user.email,
-            username : user.username,
-            ip : req.ip,
+            username: user.username,
+            ip: req.ip,
         }
         const token = jwt.sign(payload, process.env.JWT_SECRET, {
             expiresIn: '20h',

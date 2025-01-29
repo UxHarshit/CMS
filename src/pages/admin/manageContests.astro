@@ -1,7 +1,9 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import AddProblemPage from "@/components/Admin/addProblem.tsx";
+import "../../global.css";
 import jwt from "jsonwebtoken";
+import ManageContestPage from "@/components/Admin/manageContest.tsx";
+
 const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 
 const token = Astro.cookies.get("token");
@@ -65,6 +67,6 @@ if (decoded_token) {
 
 ---
 
-<Layout>
-  <AddProblemPage client:load {...out as any} baseUrl={baseUrl} />
+<Layout title="Manage Contests">
+    <ManageContestPage client:load {...out as any} baseUrl={baseUrl} />
 </Layout>

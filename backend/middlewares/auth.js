@@ -10,7 +10,6 @@ const authMiddleware = (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
         const payload = jwt.verify(token, process.env.JWT_SECRET);
-        console.log(req.ip);
         if(req.ip === "::1" || req.ip === "::ffff:172.17.0.1"){
             req.auth = payload;
             next();

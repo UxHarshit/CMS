@@ -3,11 +3,12 @@ import { authMiddleware } from '../middlewares/auth.js';
 import basicUserInfo from '../middlewares/basicUserInfo.js';
 import os from 'os';
 import calculateCpuPercentage from '../helpers/cpuUsage.js';
-import calculateTraffic from '../helpers/getNetwork.js';
 import { sendMail } from '../controllers/emailController.js';
 import { Logs } from '../models/index.js';
 
-import { userListController, problemListController, addProblemController, deleteProblemController } from '../controllers/adminController.js';
+import { userListController, problemListController, addProblemController, deleteProblemController ,
+    getAllContest
+} from '../controllers/adminController.js';
 const router = express.Router();
 
 
@@ -54,7 +55,7 @@ router.post('/email', authMiddleware, basicUserInfo, isAdmin, async (req, res) =
 
 router.post('/logs', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
     // Get Recent Logs
-    const {rangeStart, rangeEnd} = req.query;
+    const { rangeStart, rangeEnd } = req.body;
     try {
         let logs;
         if (rangeStart && rangeEnd) {
@@ -70,7 +71,7 @@ router.post('/logs', authMiddleware, basicUserInfo, isAdmin, async (req, res) =>
             });
         } else {
             logs = await Logs.findAll({
-                limit: 20,
+                limit: 10,
                 order: [
                     ['createdAt', 'DESC']
                 ]
@@ -108,6 +109,11 @@ router.get('/sysInfo', authMiddleware, basicUserInfo, isAdmin, async (req, res) 
         cpu_usage: `${cpu_usage.toFixed(2)} %`,
     }
     res.status(200).json(message);
+});
+
+
+router.post('/allContests', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await getAllContest(req, res);
 });
 
 export default router;
