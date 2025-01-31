@@ -7,7 +7,9 @@ import { sendMail } from '../controllers/emailController.js';
 import { Logs } from '../models/index.js';
 
 import { userListController, problemListController, addProblemController, deleteProblemController ,
-    getAllContest
+    getAllContest,
+    getContestData,
+    getAllInstitution
 } from '../controllers/adminController.js';
 const router = express.Router();
 
@@ -114,6 +116,14 @@ router.get('/sysInfo', authMiddleware, basicUserInfo, isAdmin, async (req, res) 
 
 router.post('/allContests', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
     await getAllContest(req, res);
+});
+
+router.post('/getContestData', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await getContestData(req, res);
+});
+
+router.get('/getInstitutions', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await getAllInstitution(req, res);
 });
 
 export default router;

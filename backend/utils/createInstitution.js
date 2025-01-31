@@ -1,9 +1,9 @@
 import { Institution } from '../models/index.js';
 
-const name = 'Lloyd Institute of Engineering and Technology';
-const code = 'LIET';
-const address = 'Knowledge Park III, Greater Noida, Uttar Pradesh, India';
-const website = 'https://www.liet.in';
+const name = 'CC Pro Organization';
+const code = 'CCPRO';
+const address = 'CC Pro';
+const website = 'https://ccpro.org';
 
 const createInstitution = async () => {
     try {

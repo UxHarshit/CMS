@@ -158,4 +158,78 @@ const getAllContest = async (req, res) => {
 
     }
 }
-export { userListController, problemListController, addProblemController , deleteProblemController,getAllContest};
+
+
+const getContestData = async (req, res) => {
+    try {
+        const { contestId } = req.body;
+        
+        const constest = await Contests.findOne({
+            where: {
+                id: contestId
+            },
+            include : [
+                {
+                    model: Problems,
+                    as: 'problems',
+                    attributes: ['id', 'title', 'difficulty'],
+                    through: {
+                        attributes: [] // remove the join table attributes
+                    }
+                },
+                {
+                    model: Institution,
+                    as: 'institution',
+                    attributes: ['name', 'code']
+                }
+            ]
+        });
+
+        const data = {
+            id: constest.id,
+            name: constest.name,
+            description: constest.description,
+            startDate: constest.startDate,
+            endDate: constest.endDate,
+            institution: constest.institution.name,
+            code : constest.institution.code,
+            problems: constest.problems.map(problem => {
+                return {
+                    id: problem.id,
+                    title: problem.title,
+                    difficulty: problem.difficulty
+                }
+            })
+        }
+        res.json(data);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+
+const getAllInstitution = async (req, res) => {
+    try {
+        const institutions = await Institution.findAll({
+            attributes: ['name', 'code']
+        });
+        res.json(institutions);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+export { 
+    userListController, problemListController, addProblemController , 
+    deleteProblemController,getAllContest,getContestData,getAllInstitution
+};
