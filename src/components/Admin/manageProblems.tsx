@@ -152,6 +152,9 @@ export default function ManageProblemsPage({ props, baseUrl }: { props: any, bas
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>
+                                            ID
+                                        </TableHead>
+                                        <TableHead>
                                             Name
                                         </TableHead>
                                         <TableHead>
@@ -160,7 +163,7 @@ export default function ManageProblemsPage({ props, baseUrl }: { props: any, bas
                                         <TableHead>
                                             Created At
                                         </TableHead>
-                                        <TableHead>
+                                        <TableHead className="w-1/6">
                                             Actions
                                         </TableHead>
                                     </TableRow>
@@ -173,10 +176,11 @@ export default function ManageProblemsPage({ props, baseUrl }: { props: any, bas
                                         )
                                         .map(problem => (
                                             <TableRow key={problem.id}>
+                                                <TableCell>{problem.id}</TableCell>
                                                 <TableCell>{problem.name}</TableCell>
                                                 <TableCell>{problem.difficulty}</TableCell>
                                                 <TableCell>{problem.createdAt}</TableCell>
-                                                <TableCell>
+                                                <TableCell className="flex items-center">
                                                     <Button
                                                         onClick={() => handleEditProblem(problem.id)}
                                                         >

@@ -9,7 +9,12 @@ import { Logs } from '../models/index.js';
 import { userListController, problemListController, addProblemController, deleteProblemController ,
     getAllContest,
     getContestData,
-    getAllInstitution
+    getAllInstitution,
+    changeInstitution,
+    updateContest,
+    deleteContestProblem,
+    searchProblem,
+    addProblemToContest
 } from '../controllers/adminController.js';
 const router = express.Router();
 
@@ -126,4 +131,23 @@ router.get('/getInstitutions', authMiddleware, basicUserInfo, isAdmin, async (re
     await getAllInstitution(req, res);
 });
 
+router.post('/changeInstitution', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await changeInstitution(req, res);
+});
+
+router.post('/updateContest', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await updateContest(req, res);
+});
+
+router.post('/deleteContestProblem', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await deleteContestProblem(req, res);
+});
+
+router.post('/searchProblem', authMiddleware, basicUserInfo, isSuperAdmin, async (req, res) => {
+    await searchProblem(req, res);
+});
+
+router.post('/addProblemToContest', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await addProblemToContest(req, res);
+});
 export default router;

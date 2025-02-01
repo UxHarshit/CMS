@@ -1,4 +1,4 @@
-import { User, UserProfile, Problems,TestCases,Contests,Institution } from '../models/index.js';
+import { User, UserProfile, Problems, TestCases, Contests, Institution, Contest_Problems } from '../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../config/database.js';
 
@@ -60,14 +60,18 @@ const deleteProblemController = async (req, res) => {
     }
     catch (error) {
         console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
     }
 }
 
 const addProblemController = async (req, res) => {
     const questionData = req.body;
-    
+
     const transaction = await sequelize.transaction();
-    try{
+    try {
         const problem = await Problems.create({
             title: questionData.title,
             description: questionData.description,
@@ -134,7 +138,7 @@ const getAllContest = async (req, res) => {
                 attributes: ['name']
             }]
         });
-        
+
 
         const structuredContests = contests.map(contest => {
             return {
@@ -163,12 +167,12 @@ const getAllContest = async (req, res) => {
 const getContestData = async (req, res) => {
     try {
         const { contestId } = req.body;
-        
+
         const constest = await Contests.findOne({
             where: {
                 id: contestId
             },
-            include : [
+            include: [
                 {
                     model: Problems,
                     as: 'problems',
@@ -192,7 +196,7 @@ const getContestData = async (req, res) => {
             startDate: constest.startDate,
             endDate: constest.endDate,
             institution: constest.institution.name,
-            code : constest.institution.code,
+            code: constest.institution.code,
             problems: constest.problems.map(problem => {
                 return {
                     id: problem.id,
@@ -229,7 +233,252 @@ const getAllInstitution = async (req, res) => {
     }
 }
 
-export { 
-    userListController, problemListController, addProblemController , 
-    deleteProblemController,getAllContest,getContestData,getAllInstitution
+
+const changeInstitution = async (req, res) => {
+    try {
+        const { contestId, institutionCode } = req.body;
+        if (!contestId || !institutionCode) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+        const constest = await Contests.findOne({
+            where: {
+                id: contestId
+            }
+        });
+        const institution = await Institution.findOne({
+            where: {
+                code: institutionCode
+            }
+        });
+        if (!constest || !institution) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+        constest.institutionId = institution.id;
+        await constest.save();
+        res.json({
+            success: true,
+            message: "Institution changed successfully"
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+
+const updateContest = async (req, res) => {
+    try {
+        const data = req.body;
+        if (!data) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+        if (!data.id || !data.description || !data.name || !data.startDate || !data.endDate) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request data"
+            });
+            return;
+        }
+        const contest = await Contests.findOne({
+            where: {
+                id: data.id
+            }
+        });
+
+        if (!contest) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+
+        contest.name = data.name;
+        contest.description = data.description;
+        contest.startDate = data.startDate;
+        contest.endDate = data.endDate;
+        await contest.save();
+        res.json({
+            success: true,
+            message: "Contest updated successfully"
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+const deleteContestProblem = async (req, res) => {
+    const { contestId, problemId } = req.body;
+    if (!contestId || !problemId) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request"
+        });
+        return;
+    }
+    const contest = Contests.findOne({
+        where: {
+            id: contestId
+        }
+    });
+    if (!contest) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request"
+        });
+        return;
+    }
+
+    const problem = Problems.findOne({
+        where: {
+            id: problemId
+        }
+    });
+    if (!problem) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request"
+        });
+    }
+
+    Contest_Problems.destroy({
+        where: {
+            contestId: contestId,
+            problemId: problemId
+        }
+    }).then(() => {
+        res.json({
+            success: true,
+            message: "Problem removed from contest"
+        });
+    }).catch((error) => {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    });
+}
+
+const searchProblem = async (req, res) => {
+    const { problemId } = req.body;
+    console.log(problemId);
+    if (!problemId) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request"
+        });
+        return;
+    }
+    try {
+        const problem = await Problems.findOne({
+            where: {
+                id: problemId
+            },
+            attributes: ['id', 'title']
+        });
+        if (!problem) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+        res.json(problem);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+
+const addProblemToContest = async (req, res) => {
+    const { contestId, problemId } = req.body;
+    if (!contestId || !problemId) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request"
+        });
+        return;
+    }
+    try {
+        const contest = await Contests.findOne({
+            where: {
+                id: contestId
+            }
+        });
+        const problem = await Problems.findOne({
+            where: {
+                id: problemId
+            }
+        });
+
+        if (!contest || !problem) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+
+        const constestProblem = await Contest_Problems.findOne({
+            where: {
+                contestId: contestId,
+                problemId: problemId
+            }
+        });
+        if (constestProblem) {
+            res.status(400).json({
+                success: false,
+                message: "Problem already in contest"
+            });
+            return;
+        }
+
+        await Contest_Problems.create({
+            contestId: contestId,
+            problemId: problemId
+        });
+        res.json({
+            success: true,
+            message: "Problem added to contest"
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+export {
+    userListController, problemListController, addProblemController,
+    deleteProblemController, getAllContest, getContestData, getAllInstitution,
+    changeInstitution, updateContest, deleteContestProblem, searchProblem,
+    addProblemToContest
 };
