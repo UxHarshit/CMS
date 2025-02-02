@@ -95,11 +95,23 @@ export default function EditContest({ props, baseUrl }: { props: any, baseUrl: s
                 }
             )
         })
-            .then(res => res.json())
-            .then(data => {
-                setContestData(data);
+            .then(async(res)=>{
+                if(res.ok){
+                    return res.json();
+                } else {
+                    window.location.href = "/admin/manageContests";
+                }
             })
-            .catch(err => console.log(err));
+            .catch(err => {
+                toast({
+                    title: "Error",
+                    description: "Failed to fetch contest data",
+                    variant: "destructive",
+                    duration: 3000
+                })
+                window.location.href = "/admin/manageContests";
+
+            })
     }
 
     const refresh = () => {
@@ -379,6 +391,53 @@ export default function EditContest({ props, baseUrl }: { props: any, baseUrl: s
     }
 
 
+    const deleteContest = async () => {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "/login";
+        }
+        await fetch(`${baseUrl}/api/admin/deleteContest`, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }, body: JSON.stringify(
+                {
+                    "contestId": contestData.id
+                }
+            )
+        })
+            .then(async (res) => {
+                if (res.ok) {
+                    toast({
+                        title: "Contest Deleted",
+                        description: "Contest deleted successfully",
+                        variant: "default",
+                        duration: 3000
+                    })
+                    window.location.href = "/admin/manageContests";
+                } else {
+                    toast({
+                        title: "Error",
+                        description: "Failed to delete contest",
+                        variant: "destructive",
+                        duration: 3000
+                    })
+                }
+            })
+            .catch(err => {
+                toast({
+                    title: "Error",
+                    description: "Failed to delete contest",
+                    variant: "destructive",
+                    duration: 3000
+                })
+            })
+        setLoading(false);
+    }
+
+
     return (
         <>
             <Toaster />
@@ -405,6 +464,9 @@ export default function EditContest({ props, baseUrl }: { props: any, baseUrl: s
                                         </Button>
                                         <Button onClick={refresh}>
                                             <RefreshCcw className="h-6 w-6" />
+                                        </Button>
+                                        <Button variant="destructive" onClick={deleteContest}>
+                                            <Trash className="h-6 w-6" />
                                         </Button>
                                         <Button onClick={saveChanges}>
                                             <Save className="h-6 w-6" />

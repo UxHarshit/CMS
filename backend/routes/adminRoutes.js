@@ -14,7 +14,9 @@ import { userListController, problemListController, addProblemController, delete
     updateContest,
     deleteContestProblem,
     searchProblem,
-    addProblemToContest
+    addProblemToContest,
+    addContestController,
+    deleteContest
 } from '../controllers/adminController.js';
 const router = express.Router();
 
@@ -149,5 +151,15 @@ router.post('/searchProblem', authMiddleware, basicUserInfo, isSuperAdmin, async
 
 router.post('/addProblemToContest', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
     await addProblemToContest(req, res);
+});
+
+
+router.post('/addContest', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await addContestController(req, res);
+});
+
+
+router.post('/deleteContest', authMiddleware, basicUserInfo, isAdmin, async (req, res) => {
+    await deleteContest(req, res);
 });
 export default router;

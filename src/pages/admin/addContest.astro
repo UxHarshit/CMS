@@ -1,7 +1,7 @@
 ---
 import "../../global.css";
 import Layout from "../../layouts/Layout.astro";
-import AddProblemPage from "@/components/Admin/addProblem.tsx";
+import AddContestPage from "@/components/Admin/addContest.tsx";
 import jwt from "jsonwebtoken";
 const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 
@@ -66,6 +66,6 @@ if (decoded_token) {
 
 ---
 
-<Layout>
-  <AddProblemPage client:load {...out as any} baseUrl={baseUrl} />
+<Layout title="Add Contest">
+  <AddContestPage client:load {...out as any} baseUrl={baseUrl} />
 </Layout>

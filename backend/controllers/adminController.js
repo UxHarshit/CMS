@@ -476,9 +476,108 @@ const addProblemToContest = async (req, res) => {
     }
 }
 
+const addContestController = async (req, res) => {
+    try {
+        const data = req.body;
+        if (!data) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+        if (!data.name || !data.description || !data.startDate || !data.endDate || !data.institutionCode) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request data"
+            });
+            return;
+        }
+        const institution = await Institution.findOne({
+            where: {
+                code: data.institutionCode
+            }
+        });
+        if (!institution) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+
+        const ress = await Contests.create({
+            name: data.name,
+            description: data.description,
+            startDate: data.startDate,
+            allowedLanguages: ["c", "cpp", "java"],
+            endDate: data.endDate,
+            institutionId: institution.id
+        });
+
+
+
+        res.json({
+            success: true,
+            id : ress.id,
+            message: "Contest added successfully"
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+const deleteContest = async (req, res) => {
+    const { contestId } = req.body;
+    if (!contestId) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request"
+        });
+        return;
+    }
+    try {
+
+        const contest = await Contests.findOne({
+            where: {
+                id: contestId
+            }
+        });
+
+        if (!contest) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+
+        await Contests.destroy({
+            where: {
+                id: contestId
+            }
+        });
+        res.json({
+            success: true,
+            message: "Contest deleted successfully"
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
 export {
     userListController, problemListController, addProblemController,
     deleteProblemController, getAllContest, getContestData, getAllInstitution,
     changeInstitution, updateContest, deleteContestProblem, searchProblem,
-    addProblemToContest
+    addProblemToContest,addContestController,deleteContest
 };
