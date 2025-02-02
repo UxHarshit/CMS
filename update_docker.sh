@@ -60,8 +60,16 @@ print_message $CYAN "Starting the update process..."
 print_message $CYAN "Updating frontend..."
 (cd ./ && update_service $FRONTEND_IMAGE $FRONTEND_CONTAINER $FRONTEND_PORT)
 
+# Run the specific frontend container with the given name and port
+print_message $GREEN "Running frontend container with specified parameters..."
+docker run -d -p 4321:4321 --name cms_frontend cms_frontend
+
 # Update Backend Service
 print_message $CYAN "Updating backend..."
 (cd ./backend && update_service $BACKEND_IMAGE $BACKEND_CONTAINER $BACKEND_PORT)
+
+# Run the specific backend container with the given name and port
+print_message $GREEN "Running backend container with specified parameters..."
+docker run -d -p 5000:5000 --name cms_backend cms_backend
 
 print_message $GREEN "All services updated successfully!"
