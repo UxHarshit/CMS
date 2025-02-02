@@ -26,6 +26,12 @@ const saveLog = async (logEntry) => {
     }
 }
 
+app.use('/robots.txt', function (req, res, next) {
+    res.type('text/plain')
+    res.send(`Disallow: /`);
+  });
+
+
 app.use((req, res, next) => {
 
     if (req.ip === '::1' || req.ip === '::ffff:127.0.0.1' || req.ip === '::ffff:172.17.0.1') {
