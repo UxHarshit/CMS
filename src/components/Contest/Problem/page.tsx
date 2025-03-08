@@ -25,19 +25,36 @@ interface Problem {
     hint: string;
 }
 
+interface TestCase {
+    status: number;
+    time: string;
+    memory: number;
+}
+
+interface SubmissionData {
+    [key: string]: TestCase;
+}
+interface FinalSubmission {
+    isAc: boolean;
+    submissionId: string;
+    data: SubmissionData;
+}
+
 export default function ProblemPage(props: {
     name: string,
     email: string,
     image: string,
     username: string
     , problems: Problem[]
-    ,baseUrl: string}) {
+    , baseUrl: string
+}) {
 
     const [questions, setQuestions] = useState<Problem[]>(props.problems)
     const [name, setName] = useState<string>("")
     const [email, setEmail] = useState<string>("")
     const [image, setImage] = useState<string>("")
     const [username, setUsername] = useState<string>("")
+
 
     useEffect(() => {
         setName(props.name)
@@ -112,6 +129,7 @@ export default function ProblemPage(props: {
     const [compileOutput, setCompileOutput] = useState<string>('')
 
     const [submission, setSubmission] = useState<string>("")
+    const [iFinalSubmission, setIFinalSubmission] = useState<FinalSubmission>()
 
     const [currentTheme, setCurrentTheme] = useState<string>("vs-dark")
     const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
@@ -232,7 +250,10 @@ export default function ProblemPage(props: {
         const errors = markers.filter(marker => marker.severity === 8).map(marker => marker.message)
         setError(errors)
     }
+    const getReversedData = () => {
 
+        return Object.entries(iFinalSubmission?.data || {}); // Return original order if no AC
+    };
     const handleRunCode = async () => {
         // Clear previous output
         setOutput("")
@@ -240,11 +261,19 @@ export default function ProblemPage(props: {
         setSubmission("")
         setLoading(true)
 
+        const token = localStorage.getItem('token')
+        if (!token) {
+            window.location.href = '/login'
+            return
+        }
+
+
 
         const response = await fetch(`${props.baseUrl}/api/problems/run`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
             },
             body: JSON.stringify({
                 problemId: currentQuestionIdx.id,
@@ -296,12 +325,64 @@ export default function ProblemPage(props: {
         setOutput("")
         setError([])
         setSubmission("")
+        setIFinalSubmission(undefined)
         setLoading(true)
+
+        const token = localStorage.getItem('token')
+        if (!token) {
+            window.location.href = '/login'
+            return
+        }
+
+        await fetch(`${props.baseUrl}/api/problems/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                problemId: currentQuestionIdx.id,
+                contestId: window.location.pathname.split('/')[2],
+                language_id: languages.find(lang => lang.value === language)?.language_id,
+                code: currentCode
+            })
+        }).then(async res => {
+            let data = await res.json();
+            if (res.ok) {
+                // Convert the data object to an array of entries for easier manipulation
+                let entries = Object.entries(data.data) as [string, TestCase][];
+
+                // Find the index where status is 3
+                let reverseIndex = entries.findIndex(([key, value]) => value.status === 3);
+
+                if (reverseIndex !== -1) {
+                    // Reverse the part of the array from index 0 to reverseIndex (inclusive)
+                    let reversedPart = entries.slice(0, reverseIndex + 1).reverse();
+
+                    // Combine the reversed part with the remaining entries
+                    let result = [...reversedPart, ...entries.slice(reverseIndex + 1)];
+
+                    // Convert the result back to an object
+                    let reversedData = Object.fromEntries(result);
+
+                    // Set the state with the reversed data
+                    setIFinalSubmission({ ...data, data: reversedData });
+                } else {
+                    // If no entry with status 3 is found, set the data as is
+                    setIFinalSubmission(data);
+                }
+            } else {
+                setError([data.message]);
+            }
+        }).catch(err => {
+            console.error(err)
+        })
+
         setLoading(false)
     }
 
     const handleResetCode = () => {
-        setCode(starterCode[language as keyof typeof starterCode])
+        handleEditorChange(starterCode[language as keyof typeof starterCode])
         setOutput("")
         setError([])
         setSubmission("")
@@ -591,9 +672,57 @@ export default function ProblemPage(props: {
                                                         )}
                                                 </div>
                                             )
-                                                : (
+                                                : ( !submission && error.length > 0 && iFinalSubmission &&
+                                                    (
                                                     <div className="text-center text-gray-500">No submission yet</div>
+                                                    )
                                                 )}
+
+                                            {loading && (
+                                                <div className="flex justify-center items-center mt-4">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                                                </div>
+                                            )}
+                                            {(iFinalSubmission && !iFinalSubmission.isAc) ? (
+                                                <div className="mt-4">
+                                                    <h4 className="font-semibold">Test Cases:</h4>
+                                                    <div className="overflow-scroll">
+                                                        <table className="w-full">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th className="border border-gray-300 dark:border-gray-700">Test Case</th>
+                                                                    <th className="border border-gray-300 dark:border-gray-700">Status</th>
+                                                                    <th className="border border-gray-300 dark:border-gray-700">Time</th>
+                                                                    <th className="border border-gray-300 dark:border-gray-700">Memory</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {getReversedData().map(([tcId, tc], index) => (
+                                                                    <tr key={index}>
+                                                                        <td className="border border-gray-300 dark:border-gray-700">#{index + 1}</td>
+                                                                        <td className="border border-gray-300 dark:border-gray-700">{(
+                                                                            tc.status === 3 ? 'Accepted' :
+                                                                                tc.status === 4 ? 'Wrong Answer' :
+                                                                                    tc.status === 5 ? 'Time Limit Exceeded' :
+                                                                                        tc.status === 6 ? 'Compilation Error' :
+                                                                                            tc.status === 7 ? 'Runtime Error' :
+                                                                                                tc.status === 8 ? 'Compilation Error' :
+                                                                                                    tc.status === -1 ? 'Not Processed' :
+                                                                                                        'Compilation Error'
+                                                                        )}</td>
+                                                                        <td className="border border-gray-300 dark:border-gray-700">{tc.time} ms</td>
+                                                                        <td className="border border-gray-300 dark:border-gray-700">{tc.memory} KB</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            ) : (iFinalSubmission && iFinalSubmission.isAc) ? (
+                                                <div className="mt-4">
+                                                    <h4 className="font-semibold">All TC Passed REP++</h4>
+                                                </div>
+                                            ) : null}
                                         </CardContent>
                                     </Card>
                                 </div>
