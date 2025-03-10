@@ -1,5 +1,5 @@
 import express from 'express';
-import { runProblemController, getProblemController, updateProblemController, submitProblemController } from '../controllers/problemController.js';
+import { runProblemController, getProblemController, updateProblemController, submitProblemController, isSolvedQuestionController } from '../controllers/problemController.js';
 import { authMiddleware } from '../middlewares/auth.js';
 import basicUserInfo from '../middlewares/basicUserInfo.js';
 
@@ -21,6 +21,10 @@ router.put('/:id', authMiddleware, (req, res) => {
 
 router.post('/submit',authMiddleware,basicUserInfo, (req, res) => {
     submitProblemController(req, res);
+});
+
+router.post('/isProblemSolved',authMiddleware,basicUserInfo, (req, res) => {
+    isSolvedQuestionController(req, res);
 });
 
 

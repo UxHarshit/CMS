@@ -11,7 +11,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-export default function Nav({ name, email, image, username }: { name: string, email: string, image: string, username: string }) {
+export default function Nav({ name, email, image, username,score }: { name: string, email: string, image: string, username: string,score : number }) {
 
     const [darkMode, setDarkMode] = useState(false);
     const firstname = name.split(' ')[0];
@@ -43,12 +43,17 @@ export default function Nav({ name, email, image, username }: { name: string, em
                         <span className="text-xl font-bold text-gray-800 dark:text-white">CodeContest Pro</span>
                     </div>
                     <div className='flex items-center space-x-2'>
-                        <div className='md:inline'>
+                        <div className='md:flex flex-wrap gap-2 items-center space-x-2'>
+                            <div className='flex flex-wrap items-center space-x-2 border border-gray-300 dark:border-gray-700 rounded-md p-2'>
+                                <CalendarDays className='h-4 w-4' />
+                                <span className='text-gray-600 dark:text-gray-300'>Score: {score}</span>
+                            </div>
                             <Button variant="ghost" onClick={toggleDarkMode}>
                                 {darkMode ? <Sun className='h-8 w-8' /> : <Moon className='h-8 w-8' />}
                             </Button>
+
                         </div>
-                        <span className='hidden md:inline text-gray-600 dark:text-gray-300'>Welcome, {firstname}</span>
+                        <span className='md:inline text-gray-600 dark:text-gray-300'>Welcome, {firstname}</span>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className=''>

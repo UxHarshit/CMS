@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Problems, Contest_Problems, Contests, TestCases, Submissions, Contest_Participants } from '../models/index.js';
+import { Problems, Contest_Problems, Contests, TestCases, Submissions, Contest_Participants, Solved } from '../models/index.js';
 import getLanguageTime from '../helpers/getLanguageTime.js';
 import sequelize from '../config/database.js';
 import crypto from 'crypto';
@@ -104,9 +104,32 @@ const runProblemController = async (req, res) => {
         console.log(error);
         return res.status(500).json({ message: 'Internal server error' });
     }
-
 };
 
+const isSolvedQuestionController = async (req, res) => {
+    const { problemId, contestId } = req.body;
+
+    const { id: userId } = req.user;
+
+    try {
+        const isSolved = await Solved.findOne({
+            where: {
+                problemId,
+                userId,
+                contestId
+            }
+        });
+
+        if (isSolved) {
+            return res.status(200).json({ isSolved: true });
+        }
+        return res.status(200).json({ isSolved: false });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
 const getProblemController = async (req, res) => {
     const { id } = req.params;
     const question = await Problems.findOne({ where: { id } });
@@ -179,6 +202,18 @@ const submitProblemController = async (req, res) => {
             Problems.findOne({ where: { id: problemId } }),
             TestCases.findAll({ where: { problemId } })
         ]);
+
+        const isAlreadySolved = await Solved.findOne({
+            where: {
+                userId: req.user.id,
+                problemId,
+                contestId,
+            }
+        });
+
+        if (isAlreadySolved) {
+            return res.status(400).json({ message: 'Problem already solved' });
+        }
 
         if (!isContestProblem) return res.status(400).json({ message: 'Problem is not in the contest' });
         if (!contest) return res.status(400).json({ message: 'Contest not found' });
@@ -266,14 +301,47 @@ const submitProblemController = async (req, res) => {
 
         // Update participant score if all tests passed
         if (accCount === testCases.length) {
-            const contestParticipant = await Contest_Participants.findOne({
-                where: { contestId, userId: req.user.id },
-            });
+            const transaction = await sequelize.transaction();
 
-            contestParticipant.score += totalPoints;
-            contestParticipant.last_submission_at = new Date();
-            await contestParticipant.save();
+            try {
+                const contestParticipant = await Contest_Participants.findOne({
+                    where: { contestId, userId: req.user.id },
+                    transaction,  // Pass transaction explicitly
+                });
+
+                if (!contestParticipant) {
+                    await transaction.rollback();
+                    return res.status(404).json({ message: 'Participant not found' });
+                }
+
+                contestParticipant.score += totalPoints;
+                contestParticipant.last_submission_at = new Date();
+                await contestParticipant.save({ transaction });  // Ensure it runs inside the transaction
+
+                const solved = await Solved.create(
+                    {
+                        userId: req.user.id,
+                        contestId,
+                        problemId,
+                    },
+                    { transaction }
+                );
+
+                if (!solved) {
+                    await transaction.rollback();
+                    return res.status(500).json({ message: 'Failed to save submission' });
+                }
+
+                await transaction.commit();  // Ensure commit is awaited
+                //return res.status(200).json({ message: 'Submission saved successfully' });
+
+            } catch (error) {
+                await transaction.rollback();
+                console.error(error);
+                return res.status(500).json({ message: 'Internal Server Error' });
+            }
         }
+
 
         // Prepare response data
         const data = Object.fromEntries(
@@ -300,4 +368,4 @@ const submitProblemController = async (req, res) => {
 
 
 
-export { runProblemController, getProblemController, updateProblemController, submitProblemController };
+export { runProblemController, getProblemController, updateProblemController, submitProblemController, isSolvedQuestionController };

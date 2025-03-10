@@ -7,6 +7,8 @@ import { AlertCircle, AlertCircleIcon, Car, Copy, TriangleAlert } from 'lucide-r
 import { Select } from '@/components/ui/select';
 import { SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { Toaster } from '@/components/ui/toaster';
 
 interface Problem {
     id: number;
@@ -44,6 +46,7 @@ export default function ProblemPage(props: {
     name: string,
     email: string,
     image: string,
+    score: number,
     username: string
     , problems: Problem[]
     , baseUrl: string
@@ -55,11 +58,14 @@ export default function ProblemPage(props: {
     const [image, setImage] = useState<string>("")
     const [username, setUsername] = useState<string>("")
 
+    const { toast } = useToast()
+
 
     useEffect(() => {
         setName(props.name)
         setEmail(props.email)
         setImage(props.image)
+        setScore(props.score)
         setUsername(props.username)
 
     }, [])
@@ -82,6 +88,7 @@ export default function ProblemPage(props: {
                         setName(data.name)
                         setEmail(data.email)
                         setImage(data.image)
+                        setScore(data.score)
                         setUsername(data.username)
                         setQuestions(data.problems)
                     }).catch(err => {
@@ -123,10 +130,13 @@ export default function ProblemPage(props: {
     const [input, setInput] = useState<string>("")
     const [output, setOutput] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(false)
+    const [isSolved, setIsSolved] = useState<boolean>(false)
     const [error, setError] = useState<string[]>([])
     const [expectedOutput, setExpectedOutput] = useState<string>('')
     const [actualOutput, setActualOutput] = useState<string>('')
     const [compileOutput, setCompileOutput] = useState<string>('')
+
+    const [score, setScore] = useState<number>(0)
 
     const [submission, setSubmission] = useState<string>("")
     const [iFinalSubmission, setIFinalSubmission] = useState<FinalSubmission>()
@@ -259,6 +269,7 @@ export default function ProblemPage(props: {
         setOutput("")
         setError([])
         setSubmission("")
+        setIFinalSubmission(undefined)
         setLoading(true)
 
         const token = localStorage.getItem('token')
@@ -266,9 +277,6 @@ export default function ProblemPage(props: {
             window.location.href = '/login'
             return
         }
-
-
-
         const response = await fetch(`${props.baseUrl}/api/problems/run`, {
             method: 'POST',
             headers: {
@@ -322,6 +330,16 @@ export default function ProblemPage(props: {
 
     const handleSubmitCode = async () => {
         // Clear previous output
+
+        if (isSolved) {
+            toast({
+                title: "Already Solved",
+                description: "You have already solved this problem",
+                variant: "default",
+                duration: 5000,
+            })
+        }
+
         setOutput("")
         setError([])
         setSubmission("")
@@ -370,6 +388,7 @@ export default function ProblemPage(props: {
                 } else {
                     // If no entry with status 3 is found, set the data as is
                     setIFinalSubmission(data);
+                    setIsSolved(iFinalSubmission?.isAc || false)
                 }
             } else {
                 setError([data.message]);
@@ -388,6 +407,27 @@ export default function ProblemPage(props: {
         setSubmission("")
     }
     const handleQuestionChange = (idx: number) => {
+        const token = localStorage.getItem('token')
+        if (!token) {
+            window.location.href = '/login'
+            return
+        }
+        fetch(`${props.baseUrl}/api/problems/isProblemSolved`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({
+                problemId: questions[idx].id,
+                contestId: window.location.pathname.split('/')[2]
+            })
+        }).then(async res => {
+            const data = await res.json()
+            setIsSolved(data.isSolved)
+        }).catch(err => {
+            console.error(err)
+        })
         setCurrentQuestion(idx)
         if (Array.isArray(questions[idx].testCases)) {
             setInput(questions[idx].testCases.map(tc => tc.input).join('\n'))
@@ -404,6 +444,7 @@ export default function ProblemPage(props: {
 
     return (
         <>
+            <Toaster />
             {!fullscreen && (
                 // Can't switch to other tabs or full screen mode warning
                 <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
@@ -441,7 +482,7 @@ export default function ProblemPage(props: {
             {fullscreen && (
 
                 <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
-                    <Nav name={name} email={email} image={image} username={username} />
+                    <Nav name={name} email={email} image={image} username={username} score={score} />
                     <div className='mx-auto py-24 px-4 h-[calc(100vh-4rem)]'>
                         <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 h-full '>
                             <div className='lg:col-span-1 space-y-3 overflow-y-auto no-scrollbar' >
@@ -572,6 +613,22 @@ export default function ProblemPage(props: {
 
                                     </Select>
                                     <div className='flex gap-4' >
+                                        {
+                                            isSolved ? (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                                                    <span className="text-sm font-semibold">Solved</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                                                    <span className="text-sm font-semibold">Not Solved</span>
+                                                </div>
+                                            )
+
+                                        }
+
+
                                         <Button
                                             disabled={loading}
                                             onClick={handleRunCode} >Run Code</Button>
@@ -642,7 +699,7 @@ export default function ProblemPage(props: {
                                                             submission === 'Runtime Error' ? 'bg-red-100 text-red-800' :
                                                                 'bg-red-100 text-red-800'
                                                         }`}>
-                                                        {submission}
+                                                        {submission === 'Acccepted' ? 'Passed Public test case' : submission}
                                                     </div>
                                                     {submission === 'Wrong Answer' && expectedOutput && actualOutput && (
                                                         <div className="mt-4 space-y-2">
@@ -672,9 +729,9 @@ export default function ProblemPage(props: {
                                                         )}
                                                 </div>
                                             )
-                                                : ( !submission && error.length > 0 && iFinalSubmission &&
+                                                : (!submission && error.length > 0 && iFinalSubmission &&
                                                     (
-                                                    <div className="text-center text-gray-500">No submission yet</div>
+                                                        <div className="text-center text-gray-500">No submission yet</div>
                                                     )
                                                 )}
 

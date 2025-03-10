@@ -9,7 +9,7 @@ import UserRole from "./UserRole.js";
 import Contest_Participants from "./Contest_Participants.js";
 import Submissions from "./Submissions.js";
 import Logs from "./Logs.js";
-
+import Solved from "./Solved.js";
 
 User.hasOne(UserProfile, {
     foreignKey: 'userId',
@@ -140,6 +140,24 @@ Submissions.belongsTo(User, {
     onDelete: 'CASCADE',
 });
 
+Solved.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user',
+    onDelete: 'CASCADE',
+});
+
+Solved.belongsTo(Problems, {
+    foreignKey: 'problemId',
+    as: 'problem',
+    onDelete: 'CASCADE',
+});
+
+Solved.belongsTo(Contests, {
+    foreignKey: 'contestId',
+    as: 'contest',
+    onDelete: 'CASCADE',
+});
 
 
-export { User, UserProfile, Institution, Contests, Problems, Contest_Problems, TestCases , Contest_Participants, UserRole, Logs, Submissions };
+
+export { User, UserProfile, Institution, Contests, Problems, Contest_Problems, TestCases , Contest_Participants, UserRole, Logs, Submissions, Solved };

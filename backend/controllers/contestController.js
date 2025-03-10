@@ -19,8 +19,6 @@ const joinContestController = async (req, res) => {
 }
 
 const rulesController = async (req, res) => {
-
-
     const token = req.headers.authorization;
     if (!token) {
         return res.status(401).json({ message: 'Authorization header missing' });
@@ -205,6 +203,7 @@ const problemController = async (req, res) => {
             name: user.name,
             email: user.email,
             image: user.profile.image,
+            score : contestParticipant.score,
             problems: problemsArray
         });
 

@@ -18,6 +18,11 @@ const contestPass = async (req, res, next) => {
     const participant = await Contest_Participants.findOne({
         where: { contestId: contestId, userId: user.id }
     });
+
+    if (!participant) {
+        return res.status(403).json({ message: 'You are not a participant of this contest' });
+    }
+
     if (!participant.isFirstTime) {
         return res.status(403).json({ message: 'You are not a first time participant of this contest' });
     }
