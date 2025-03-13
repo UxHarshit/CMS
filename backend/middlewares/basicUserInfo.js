@@ -12,15 +12,15 @@ const basicUserInfo = async (req, res, next) => {
         }
     });
     if (!user) {
-        return res.status(404).json({ message: 'User not found' });
+        return res.status(404).json({ message: 'User not found',code: "USER_NOT_FOUND" });
     }
 
     if (user.profile.isBanned) {
-        return res.status(403).json({ message: 'You are banned from this platform' });
+        return res.status(403).json({ message: 'You are banned from this platform',code: "BAN" });
     }
 
     if (!user.profile.isVerified) {
-        return res.status(403).json({ message: 'You are not verified' });
+        return res.status(403).json({ message: 'You are not verified',code: "VERIFY" });
     }
 
     req.user = user;

@@ -7,7 +7,6 @@ import { Debug } from "astro:components";
 
 const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 
-
 // Get the token
 const token = Astro.cookies.get("token");
 var decoded_token = null;
@@ -35,6 +34,8 @@ if (!token) {
   }
 }
 var out = null;
+var status = false;
+var code = null;
 if (decoded_token) {
   out = await fetch(`${baseUrl}/api/users/dashboard`, {
     method: "POST",
@@ -43,31 +44,47 @@ if (decoded_token) {
       Authorization: `Bearer ${token.value}`,
     },
   })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        return new Response("Error: " + response.statusText);
+    .then(async (response) => {
+      var data = await response.json();
+      code = data["code"];
+      status = true;
+
+      if (response.status === 401) {
+        Astro.cookies.delete("token");
+        status = false;
       }
-    })
-    .then((data) => {
+      if (response.status === 403) {
+        status = false;
+      }
+      if (response.status === 500) {
+        status = false;
+      }
       return {
-        props: { data },
+        props: { status: status, data, code: data["code"] },
       };
     })
     .catch((error) => {
       return new Response("Error: " + error);
     });
 
+  if (status === false) {
+    if(code === "BAN"){
+      return Astro.redirect("/banned");
+    } else if (code === "VERIFY") {
+      return Astro.redirect("/verify");
+    } else {
+      return Astro.redirect("/login");
+    }
+  }
+
   if (out instanceof Response) {
     return Astro.redirect("/login");
   }
 }
-
 ---
 
 <title>Dashboard</title>
 
-<Layout>
-  <DashboardPage client:load {...out as any} baseUrl={baseUrl}/>
+<Layout>  
+  <DashboardPage client:load {...out as any} baseUrl={baseUrl} />
 </Layout>

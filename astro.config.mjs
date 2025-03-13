@@ -18,6 +18,7 @@ export default defineConfig({
     }
   ), react(), partytown()],
   output: 'server',
+  site: "http://localhost:4321",
 
   adapter: node({
     mode: 'standalone'

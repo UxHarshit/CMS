@@ -47,31 +47,8 @@ export default function Page({ props, baseUrl }: { props: any, baseUrl: string }
     }
 
     function joinContest(contest: Contest) {
-
         window.location.href = '/contest/' + contest.id + '/rules';
-        return
-        /*
-        fetch('http://localhost:5000/api/users/contest/join/' + contest.id, {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + localStorage.getItem('token'),
-                'Content-Type': 'application/json'
-            }
-        }).then(async res => {
-            console.log(res);
-            if (res.ok) {
-                alert('Successfully joined contest');
-                window.location.reload();
-            } else if (res.status === 401) {
-                alert('Unauthorized');
-            } else if (res.status === 400) {
-                alert('Already joined contest');
-            } else {
-                alert('Something went wrong');
-            }
-        }).catch(err => {
-            console.error(err);
-        }) */
+        return;
     }
 
     return (
