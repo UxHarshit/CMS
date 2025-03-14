@@ -2,11 +2,15 @@ import nodemailer from "nodemailer";
 import createMail from "../helpers/createMailTemplate.js";
 
 const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
+    host: 'gmail',
     port: 465,
     secure: true,
     name: 'codecontestpro.tech',
     debug: true,
+    secureConnection : false,
+    tls: {
+        rejectUnauthorized: true
+    },
     logger: true,
     auth: {
         user: process.env.SERVER_MAIL,
@@ -23,14 +27,7 @@ const sendMailCustom = async (recipient, subject, body) => {
     }
 
     try {
-        await transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.log(error);
-                return false;
-            }
-            console.log('Message sent: %s', info.messageId);
-        }
-        );
+        await transporter.sendMail(mailOptions);
         return true;
     } catch (error) {
         return false;
