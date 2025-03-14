@@ -10,6 +10,9 @@ import partytown from '@astrojs/partytown';
 
 import node from '@astrojs/node';
 
+import  dotenv from 'dotenv';
+dotenv.config();
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [tailwind(
@@ -18,7 +21,7 @@ export default defineConfig({
     }
   ), react(), partytown()],
   output: 'server',
-  site: "https://codecontestpro.tech",
+  site: "http://localhost:4321",
 
   adapter: node({
     mode: 'standalone'

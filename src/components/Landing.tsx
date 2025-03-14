@@ -161,14 +161,14 @@ export default function Landing({isLoggedIn}: {isLoggedIn: boolean}) {
                 <div className="container mx-auto px-4 text-center">
                     <h2 className="text-3xl font-bold mb-8 text-gray-800 dark:text-white">Get in Touch</h2>
                     <p className="text-xl mb-8 text-gray-600 dark:text-gray-300">Have questions? We're here to help!</p>
-                    <a href="mailto:contact@codecontestpro.com" className="text-blue-600 dark:text-blue-400 hover:underline text-lg">
-                        contact@codecontestpro.com
+                    <a href="mailto:contact@codecontestpro.tech" className="text-blue-600 dark:text-blue-400 hover:underline text-lg">
+                        contact@codecontestpro.tech
                     </a>
                 </div>
             </section>
             <footer className="bg-white dark:bg-gray-800 py-8">
                 <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-                    <p>&copy; 2024 CodeContest Pro. All rights reserved.</p>
+                    <p>&copy; 2025 CodeContest Pro. All rights reserved.</p>
                 </div>
             </footer>
         </div>

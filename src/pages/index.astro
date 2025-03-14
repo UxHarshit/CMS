@@ -6,6 +6,6 @@ const token = Astro.cookies.get("token");
 const isLogged = token !== undefined;
 ---
 
-<Layout>
+<Layout title="Home" description="CodeContestPro">
 	<Landing client:load isLoggedIn={isLogged} />
 </Layout>
