@@ -2,7 +2,9 @@ import nodemailer from "nodemailer";
 import createMail from "../helpers/createMailTemplate.js";
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     name: 'codecontestpro.tech',
     debug: true,
     auth: {
