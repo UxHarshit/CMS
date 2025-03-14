@@ -36,6 +36,8 @@ const sendMail = async (req, res) => {
         });
     }
 
+    console.log(process.env.SERVER_MAIL, process.env.SERVER_MAIL_PASSWORD);
+
     const mailSent = await sendMailCustom(recipient, subject, body);
     if (mailSent) {
         return res.status(200).json({
