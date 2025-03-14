@@ -3,6 +3,8 @@ import createMail from "../helpers/createMailTemplate.js";
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',
+    name: 'codecontestpro.tech',
+    debug: true,
     auth: {
         user: process.env.SERVER_MAIL,
         pass: process.env.SERVER_MAIL_PASSWORD
@@ -35,8 +37,6 @@ const sendMail = async (req, res) => {
             message: "Please provide all the required fields"
         });
     }
-
-    console.log(process.env.SERVER_MAIL, process.env.SERVER_MAIL_PASSWORD);
 
     const mailSent = await sendMailCustom(recipient, subject, body);
     if (mailSent) {
