@@ -9,17 +9,7 @@ const transporter = nodemailer.createTransport({
     }
 })
 
-
-const sendMail = async (req, res) => {
-  const { recipient, subject, body } = req.body;
-
-  if (!recipient || !subject || !body) {
-    return res.status(400).json({
-      success: false,
-      message: "Please provide all the required fields"
-    });
-  }
-
+const sendMailCustom = async (recipient, subject, body) => {
     const mailOptions = {
         from: `CC Pro <${process.env.SERVER_MAIL}>`,
         to: recipient,
@@ -29,16 +19,35 @@ const sendMail = async (req, res) => {
 
     try {
         await transporter.sendMail(mailOptions);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+
+const sendMail = async (req, res) => {
+    const { recipient, subject, body } = req.body;
+
+    if (!recipient || !subject || !body) {
+        return res.status(400).json({
+            success: false,
+            message: "Please provide all the required fields"
+        });
+    }
+
+    const mailSent = await sendMailCustom(recipient, subject, body);
+    if (mailSent) {
         return res.status(200).json({
             success: true,
-            message: "Email sent successfully"
+            message: "Mail sent successfully"
         });
-    } catch (error) {
+    } else {
         return res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: "Error sending mail"
         });
     }
 }
 
-export { sendMail };
+export { sendMail, sendMailCustom };

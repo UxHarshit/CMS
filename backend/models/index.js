@@ -10,6 +10,7 @@ import Contest_Participants from "./Contest_Participants.js";
 import Submissions from "./Submissions.js";
 import Logs from "./Logs.js";
 import Solved from "./Solved.js";
+import VerifyMail from "./VerifyMail.js";
 
 User.hasOne(UserProfile, {
     foreignKey: 'userId',
@@ -158,6 +159,18 @@ Solved.belongsTo(Contests, {
     onDelete: 'CASCADE',
 });
 
+VerifyMail.belongsTo(User, {
+    foreignKey: 'userId',
+    as: 'user',
+    onDelete: 'CASCADE',
+});
 
 
-export { User, UserProfile, Institution, Contests, Problems, Contest_Problems, TestCases , Contest_Participants, UserRole, Logs, Submissions, Solved };
+
+
+
+export { User, UserProfile, Institution, Contests,
+     Problems, Contest_Problems, TestCases , 
+     Contest_Participants, UserRole, Logs, Submissions, 
+     Solved , VerifyMail
+};

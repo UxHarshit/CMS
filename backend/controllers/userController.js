@@ -1,5 +1,6 @@
-import { User, UserProfile } from '../models/index.js';
-
+import { User, UserProfile, VerifyMail } from '../models/index.js';
+import jwt from 'jsonwebtoken';
+import { sendMailCustom } from './emailController.js';
 
 const basicUserInfo = async (req, res) => {
     try {
@@ -21,5 +22,34 @@ const basicUserInfo = async (req, res) => {
     }
 }
 
-export { basicUserInfo };
+const isVerified = async (req, res) => {
+    try {
+        const user = await User.findOne({
+            where: { email: req.auth.email, username: req.auth.username },
+            attributes: ['id', 'username', 'name', 'email', 'institutionId'],
+            include: {
+                model: UserProfile,
+                as: 'profile',
+                attributes: ['image', 'isAdmin', 'isSuperAdmin', 'isVerified', 'isBanned', 'role']
+            }
+        });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found', code: "USER_NOT_FOUND" });
+        }
+
+        if (user.profile.isVerified) {
+            res.status(200).send('Verified');
+        } else {
+            res.status(403).send('Not Verified');
+        }
+
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send('Internal Server Error');
+    }
+}
+
+
+export { basicUserInfo, isVerified };
 

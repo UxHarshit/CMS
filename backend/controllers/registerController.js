@@ -46,7 +46,7 @@ const registerController = async (req, res) => {
     await transaction.commit();
 
     res.status(201).send({ message: 'User registered successfully' });
-    
+
   } catch (error) {
     console.log(error);
     res.status(500).send('Internal Server Error');
