@@ -7,6 +7,7 @@ const transporter = nodemailer.createTransport({
     secure: true,
     name: 'codecontestpro.tech',
     debug: true,
+    logger: true,
     auth: {
         user: process.env.SERVER_MAIL,
         pass: process.env.SERVER_MAIL_PASSWORD
