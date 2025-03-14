@@ -2,8 +2,40 @@
 import Layout from "@/layouts/Layout.astro";
 import "../global.css";
 import VerifyPage from "../components/Verify.tsx";
+import { Debug } from "astro:components";
+
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
+
+const token = Astro.cookies.get("token");
+
+var already_verified = false;
+var data = null;
+
+if (!token) {
+  return Astro.redirect("/login");
+}
+
+await fetch(`${baseUrl}/api/users/verify`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token.value}`,
+  },
+})
+  .then(async (response) => {
+    if (response.ok) {
+      already_verified = true;
+    }
+  })
+  .catch((error) => {
+    return Astro.redirect("/login");
+  });
+
+if (already_verified) {
+  return Astro.redirect("/dashboard");
+}
 ---
 
 <Layout title="Verify">
-  <VerifyPage client:load />
+  <VerifyPage baseUrl={baseUrl} client:load />
 </Layout>

@@ -59,6 +59,7 @@ if (decoded_token) {
       if (response.status === 500) {
         status = false;
       }
+      if(!response.ok) status = false;
       return {
         props: { status: status, data, code: data["code"] },
       };
@@ -73,11 +74,13 @@ if (decoded_token) {
     } else if (code === "VERIFY") {
       return Astro.redirect("/verify");
     } else {
+      Astro.cookies.delete("token");
       return Astro.redirect("/login");
     }
   }
 
   if (out instanceof Response) {
+    Astro.cookies.delete("token");
     return Astro.redirect("/login");
   }
 }

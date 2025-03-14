@@ -15,7 +15,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "./ui/toaster";
 
-export default function Verify() {
+export default function Verify({ baseUrl }: { baseUrl: string }) {
   const { toast } = useToast();
   const [isResending, setIsResending] = useState(false);
 
@@ -23,14 +23,55 @@ export default function Verify() {
     setIsResending(true);
 
     // Simulate API call to resend verification email
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    if (isResending) return;
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
+    await fetch(`${baseUrl}/api/auth/verify/resend`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          toast({
+            title: "Verification email sent",
+            description:
+              "Please check your inbox (and spam folder) for the email.",
+            variant: "default",
+            duration: 5000,
+          });
+
+        } else {
+          toast({
+            title: "Failed to resend verification email",
+            description: "Too frequent requests or please try again later.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        toast({
+          title: "Internal server error",
+          description:
+            "We couldn't resend the verification email. Please try again later.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      });
 
     setIsResending(false);
-    toast({
-      title: "Verification email sent!",
-      description: "Please check your inbox for the verification link.",
-      duration: 5000,
-    });
   };
   return (
     <>

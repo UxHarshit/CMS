@@ -18,7 +18,7 @@ export default defineConfig({
     }
   ), react(), partytown()],
   output: 'server',
-  site: "http://localhost:4321",
+  site: "https://codecontestpro.tech",
 
   adapter: node({
     mode: 'standalone'

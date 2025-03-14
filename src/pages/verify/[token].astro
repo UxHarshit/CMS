@@ -1,0 +1,47 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import "../../global.css";
+import VerifyPage from "@/components/Verify.tsx";
+
+const baseUrl = import.meta.env.REACT_APP_BASE_URL;
+var success = false;
+
+await fetch(`${baseUrl}/api/auth/verify/mail`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    token: Astro.params.token,
+  }),
+})
+  .then(async (response) => {
+    var data = await response.json();
+    if (response.ok) {
+        success = true;
+    } else {
+        success = false;
+    }
+  })
+  .catch((error) => {
+    success = false;
+  });
+
+if (success) {
+    return Astro.redirect("/login");
+}
+---
+
+<Layout title="Verify Mail">
+    {success ? (
+        <div class="text-center">
+            <h1>Mail Verified</h1>
+            <p>You can now login to your account</p>
+        </div>
+    ) : (
+        <div class="text-center">
+            <h1>Mail Verification Failed</h1>
+            <p>Try again</p>
+        </div>
+    )}
+</Layout>
