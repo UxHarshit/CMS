@@ -22,7 +22,14 @@ const sendMailCustom = async (recipient, subject, body) => {
     }
 
     try {
-        await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log(error);
+                return false;
+            }
+            console.log('Message sent: %s', info.messageId);
+        }
+        );
         return true;
     } catch (error) {
         return false;
