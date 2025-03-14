@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+
+declare global {
+  interface Window {
+    hcaptcha: any;
+  }
+}
 import { Button } from "./ui/button";
 import {
   Check,
@@ -24,6 +30,8 @@ import { Input } from "./ui/input";
 import { Popover } from "./ui/popover";
 import { PopoverContent, PopoverTrigger } from "@radix-ui/react-popover";
 import { Command, CommandInput } from "./ui/command";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
+
 import {
   CommandEmpty,
   CommandGroup,
@@ -38,41 +46,31 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
   const [darkMode, setDarkMode] = useState(false);
   const [error, setError] = useState("");
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
+
   const [institution, setInstitution] = useState({
     code: "",
     value: "",
   });
+
+  const [token, setToken] = useState<string | null>(null);
+
+  const callBackCaptcha = (token: string) => {
+    setToken(token);
+  };
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    token: "",
     institution: { code: "", value: "" },
   });
 
-  // useEffect(() => {
-  //     const smoothScroll = (e: Event) => {
-  //         e.preventDefault()
-  //         const href = (e.currentTarget as HTMLAnchorElement).getAttribute('href')
-  //         if (href) {
-  //             const targetId = href.replace('#', '')
-  //             const elem = document.getElementById(targetId)
-  //             elem?.scrollIntoView({
-  //                 behavior: 'smooth'
-  //             })
-  //         }
-  //     }
-  //     const links = document.querySelectorAll('a[href^="#"]')
-  //     links.forEach(link => {
-  //         link.addEventListener('click', smoothScroll)
-  //     })
-  //     return () => {
-  //         links.forEach(link => {
-  //             link.removeEventListener('click', smoothScroll)
-  //         })
-  //     }
-  // }, []);
+    const handleVerificationSuccess = (t: string, ekey: string) => {
+        setToken(t);
+    };
+
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem("darkMode");
@@ -91,6 +89,13 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { name, email, password, confirmPassword } = formData;
+
+    if (!token) {
+      setError("Please complete the captcha");
+      return;
+    }
+    formData.token = token;
+
     formData.institution = institution;
     if (!institution.code || !institution.value) {
       setError("Please select your institution");
@@ -363,6 +368,14 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
                 </div>
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
+              
+              <HCaptcha
+                sitekey="61ca8d04-a6d6-45b8-97a4-a66e3b1401e2"
+                onVerify={(token, ekey) =>
+                  handleVerificationSuccess(token, ekey)
+                }
+              />
+
               <div className="flex items-center">
                 <input
                   checked={isTermsAccepted}
@@ -388,7 +401,9 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
               </div>
               <Button
                 disabled={!isTermsAccepted}
-               type="submit" className="w-full">
+                type="submit"
+                className="w-full"
+              >
                 Register
               </Button>
             </form>

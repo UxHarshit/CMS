@@ -1,13 +1,33 @@
 import { User, UserProfile, Institution } from '../models/index.js';
 import bcrypt from 'bcrypt';
 import sequelize from '../config/database.js';
+import axios from 'axios';
+import qs from 'qs';
 
 
 const registerController = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    const { name, email, password, institution } = req.body;
+    const { name, email, password, institution,token } = req.body;
     const { code, value } = institution;
+    if (!token) {
+      return res.status(400).send({ message: 'Token not provided.' });
+    }
+
+    const verifyUrl = "https://api.hcaptcha.com/siteverify";
+    const secret = "ES_e6a9110ece8d4da49c9cfce9e4744028";
+
+    const response = await axios.post(verifyUrl, qs.stringify({ secret, response: token }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    });
+
+    if (!response.data.success) {
+      console.log(response.data);
+      return res.status(400).send({ message: 'Failed captcha verification.' });
+    }
+
 
     if (!name || !email || !password) {
       return res.status(400).send({ message: 'Invalid request.' });
