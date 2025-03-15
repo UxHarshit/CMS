@@ -13,7 +13,6 @@ if (!id) {
 
 const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 
-
 const token = Astro.cookies.get("token");
 var decoded_token = null;
 if (!token) {
@@ -43,6 +42,27 @@ var out = {
   ok: false,
   data: null,
 };
+var isFirstTime = false; // Start with false assumption
+
+try {
+  const response = await fetch(`${baseUrl}/api/contest/isFirstTime`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token.value}`,
+    },
+    body: JSON.stringify({ contestId: id }),
+  });
+
+  isFirstTime = response.ok;
+} catch (error) {
+  isFirstTime = false;
+}
+
+if (!isFirstTime) {
+  return Astro.redirect(`/contest/${id}/rules`);
+}
+
 if (decoded_token) {
   out = await fetch(`${baseUrl}/api/contest/problems`, {
     method: "POST",
@@ -71,5 +91,5 @@ if (decoded_token) {
 ---
 
 <Layout>
-  <ProblemPage client:load {...out.data as any} baseUrl={baseUrl} />  
+  <ProblemPage client:load {...out.data as any} baseUrl={baseUrl} />
 </Layout>

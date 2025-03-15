@@ -1,9 +1,9 @@
-import {Contest_Participants, User, UserProfile, Contest_Problems, Problems, TestCases,Contests } from '../models/index.js';
+import { Contest_Participants, User, UserProfile, Contest_Problems, Problems, TestCases, Contests } from '../models/index.js';
 import jwt from 'jsonwebtoken';
 
 const joinContestController = async (req, res) => {
     const user = req.user;
-    const contestId = req.params.contestId;
+    const contestId = req.body.contestId;
 
     try {
         await Contest_Participants.create({
@@ -14,6 +14,38 @@ const joinContestController = async (req, res) => {
         return res.status(201).json({ message: 'Contest joined successfully' });
 
     } catch (error) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const isFirstTime = async (req, res) => {
+    const user = req.user;
+    const contestId = req.body.contestId;
+
+    try {
+        const contestParticipant = await Contest_Participants.findOne({
+            where: { contestId, userId: user.id }
+        });
+
+        if (!contestParticipant) {
+            return res.status(404).json({ message: 'Contest not found' });
+        }
+
+        if (contestParticipant.is_disqualified) {
+            return res.status(400).json({ message: 'You are disqualified from the contest' });
+        }
+
+        if (contestParticipant.isFirstTime) {
+            contestParticipant.isFirstTime = false;
+            await contestParticipant.save();
+
+            return res.status(200).json({ message: 'First time' });
+        } else {
+            return res.status(400).json({ message: 'You have already submitted the contest' });
+        }
+
+    } catch (error) {
+        console.log("Error: ", error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
@@ -143,7 +175,7 @@ const problemController = async (req, res) => {
         }
 
         const contestParticipant = await Contest_Participants.findOne({
-            where: { contestId }
+            where: { contestId, userId: user.id },
         });
 
 
@@ -153,7 +185,13 @@ const problemController = async (req, res) => {
         }
 
         if (contestParticipant.is_disqualified) {
-            return res.status(400).json({ message: 'You are disqualified from the contest' });
+            return res.status(400).json({ message: 'You are disqualified from the contest',
+                errCode: 'disqualified'
+             });
+        }
+
+        if (contestParticipant.isFirstTime) {
+            return res.status(400).json({ message: 'You have already submitted the contest' });
         }
 
         const problems = await Contest_Problems.findAll({
@@ -169,7 +207,7 @@ const problemController = async (req, res) => {
 
         const problemsDetails = await Problems.findAll({
             where: { id: problemIds },
-            attributes: ['id', 'title', 'description', 'difficulty', 'time_limit', 'memory_limit', 'constraints','input_format','output_format']
+            attributes: ['id', 'title', 'description', 'difficulty', 'time_limit', 'memory_limit', 'constraints', 'input_format', 'output_format']
         });
 
         if (!problemsDetails) {
@@ -197,13 +235,12 @@ const problemController = async (req, res) => {
                 constraints: problem.constraints.split('\n')
             });
         }
-
         return res.status(200).json({
             username: user.username,
             name: user.name,
             email: user.email,
             image: user.profile.image,
-            score : contestParticipant.score,
+            score: contestParticipant.score,
             problems: problemsArray
         });
 
@@ -213,4 +250,36 @@ const problemController = async (req, res) => {
     }
 
 }
-export { joinContestController, rulesController, problemController };
+
+const acceptController = async (req, res) => {
+    const user = req.user;
+    const contestId = req.body.contestId;
+
+    try {
+        const contestParticipant = await Contest_Participants.findOne({
+            where: { contestId, userId: user.id }
+        });
+
+        if (!contestParticipant) {
+            contestParticipant = await Contest_Participants.create({
+                contestId,
+                userId: user.id,
+                isFirstTime: true
+            });
+        }
+
+        if (contestParticipant.is_disqualified) {
+            return res.status(400).json({ message: 'You are disqualified from the contest' });
+        }
+
+        if (!contestParticipant.isFirstTime) {
+            return res.status(400).json({ message: 'You have already submitted the contest' });
+        }
+        return res.status(200).json({ message: 'Contest accepted' });
+
+    } catch (error) {
+        console.log("Error: ", error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+export { joinContestController, rulesController, problemController, isFirstTime, acceptController };

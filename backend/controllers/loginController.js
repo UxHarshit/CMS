@@ -24,7 +24,7 @@ const loginController = async (req, res) => {
             ip: req.ip,
         }
         const token = jwt.sign(payload, process.env.JWT_SECRET, {
-            expiresIn: '20h',
+            expiresIn: '7d',
         });
         res.status(200).send({ token });
     } catch (error) {

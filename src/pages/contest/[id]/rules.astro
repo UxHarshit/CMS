@@ -1,7 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import "../../../global.css";
-import ContestPage from "@/components/Contest/Rules/page.tsx";
+import RulesPage from "@/components/Contest/Rules/page.tsx";
 import jwt from "jsonwebtoken";
 import { Debug } from "astro:components";
 
@@ -73,5 +73,5 @@ if (decoded_token) {
 
 
 <Layout title="Contest Rules">
-  <ContestPage client:load {...out.data as any} baseUrl={baseUrl}/>
+  <RulesPage client:load {...out.data as any} baseUrl={baseUrl}/>
 </Layout>
