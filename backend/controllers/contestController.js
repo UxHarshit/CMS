@@ -239,6 +239,7 @@ const problemController = async (req, res) => {
             username: user.username,
             name: user.name,
             email: user.email,
+            endTime : contest.endDate,
             image: user.profile.image,
             score: contestParticipant.score,
             problems: problemsArray

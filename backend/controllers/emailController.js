@@ -2,18 +2,15 @@ import nodemailer from "nodemailer";
 import createMail from "../helpers/createMailTemplate.js";
 
 const transporter = nodemailer.createTransport({
-    host: 'gmail',
-    port: 465,
-    secure: true,
-    name: 'codecontestpro.tech',
+    host: 'live.smtp.mailtrap.io',
+    port: 2525,
+    // name: 'codecontestpro.tech',
+    domain: 'codecontestpro.tech',
+    secure: false,
     debug: true,
-    secureConnection : false,
-    tls: {
-        rejectUnauthorized: true
-    },
     logger: true,
     auth: {
-        user: process.env.SERVER_MAIL,
+        user: "api",
         pass: process.env.SERVER_MAIL_PASSWORD
     }
 })
