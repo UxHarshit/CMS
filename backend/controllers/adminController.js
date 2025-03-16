@@ -1,6 +1,7 @@
-import { User, UserProfile, Problems, TestCases, Contests, Institution, Contest_Problems } from '../models/index.js';
+import { User, UserProfile, Problems, TestCases, Contests, Institution, Contest_Problems, Contest_Participants } from '../models/index.js';
 import { Op } from 'sequelize';
 import sequelize from '../config/database.js';
+import { isFirstTime } from './contestController.js';
 
 const userListController = async (req, res) => {
 
@@ -575,9 +576,110 @@ const deleteContest = async (req, res) => {
     }
 }
 
+const contestParticipants = async (req, res) => {
+    const { contestId } = req.body;
+    if (!contestId) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request"
+        });
+        return;
+    }
+    try {
+        const contest = await Contest_Participants.findAll({
+            where: {
+                contestId: contestId
+            },
+            include: [{
+                model: User,
+                as: 'user',
+                attributes: ['id','name', 'email', 'username'],
+                include: [{
+                    model: UserProfile,
+                    as: 'profile',
+                    attributes: ['role']
+                }]
+            }]
+        });
+
+        if (!contest) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid request"
+            });
+            return;
+        }
+
+        const data = {
+            contestName: contest.name,
+            participants: contest.map(participant => {
+                return {
+                    id: participant.user.id,
+                    name: participant.user.name,
+                    isFirstTime: participant.isFirstTime ? 1 : 0,
+                    username: participant.user.username,
+                    email: participant.user.email,
+                    isDisqualified: participant.is_disqualified ? 1 : 0,
+                    score: participant.score,
+                }
+            })
+        }
+        res.json(data);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+const enableUserTest = async (req, res) => {
+    const { userId, contestId } = req.body;
+    console.log(userId, contestId);
+    if (!userId || !contestId) {
+        res.status(400).json({
+            success: false,
+            message: "Invalid request params"
+        });
+        return;
+    }
+    try {
+        const participant = await Contest_Participants.findOne({
+            where: {
+                userId: userId,
+                contestId: contestId
+            }
+        });
+        if (!participant) {
+            res.status(400).json({
+                success: false,
+                message: "Invalid user"
+            });
+            return;
+        }
+        participant.isFirstTime = true;
+        await participant.save();
+        res.json({
+            success: true,
+            message: "User test enabled"
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+}
+
+
+
 export {
     userListController, problemListController, addProblemController,
     deleteProblemController, getAllContest, getContestData, getAllInstitution,
     changeInstitution, updateContest, deleteContestProblem, searchProblem,
-    addProblemToContest,addContestController,deleteContest
+    addProblemToContest,addContestController,deleteContest,contestParticipants,
+    enableUserTest
 };

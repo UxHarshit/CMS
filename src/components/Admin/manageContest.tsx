@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Nav from "./nav";
 import { Button } from "../ui/button";
-import { Edit, Edit3, PlusCircle, RefreshCw, Search } from "lucide-react";
+import { ChartArea, Edit, Edit3, PlusCircle, RefreshCw, Search, UserPen } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "../ui/toaster";
@@ -149,9 +149,15 @@ export default function ManageContest({ props, baseUrl }: { props: any, baseUrl:
                                             }}>
                                             {contest.institution}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="flex items-center space-x-2">
                                             <Button onClick={() => window.location.href = `/admin/editContest/${contest.id}`}>
                                                 <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button onClick={() => window.location.href = `/contest/${contest.id}/leaderboard`}>
+                                                <ChartArea className="h-4 w-4" />
+                                            </Button>
+                                            <Button onClick={() => window.location.href = `/admin/manageContestUsers/${contest.id}`}>
+                                                <UserPen className="h-4 w-4" />
                                             </Button>
                                         </TableCell>
                                     </TableRow>

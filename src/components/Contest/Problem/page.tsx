@@ -517,13 +517,11 @@ export default function ProblemPage(props: {
 
     if (method === "Focus lost") {
       setCheatCount((prev) => prev + 1);
-    }
-
-    if (method === "Tab changed") {
+    } else if (method === "Tab changed") {
       setCheatCount((prev) => prev + 1);
     }
 
-    if (cheatCount >= 3) {
+    if (cheatCount >= 5) {
       setDisqualified(true);
       exitFullscreen();
     }
