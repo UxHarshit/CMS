@@ -132,3 +132,9 @@
 .animate-fade-in-up {
   animation: fadeInUp 1s ease-out;
 }
+
+.prevent-select {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
+}

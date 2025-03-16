@@ -16,16 +16,44 @@ export default function Nav({
   email,
   image,
   username,
+  endTime,
+  id,
   score,
 }: {
   name: string;
   email: string;
   image: string;
   username: string;
+  endTime: string;
+  id: string;
   score: number;
 }) {
   const [darkMode, setDarkMode] = useState(false);
   const firstname = name.split(" ")[0];
+  const calculateTimeLeft = () => {
+    const difference = new Date(endTime).getTime() - new Date().getTime();
+    if (difference > 0) {
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / (1000 * 60)) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      };
+    } else {
+      window.location.replace(`/contest/${id}/leaderboard`);
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [endTime]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -65,6 +93,15 @@ export default function Nav({
               >
                 Finish Contest
               </Button>
+              {/* Styled Timer of Contest */}
+              <div className="flex flex-wrap items-center space-x-2 border border-gray-300 dark:border-gray-700 rounded-md p-2">
+                <CalendarDays className="h-4 w-4" />
+                <span className="text-gray-600 dark:text-gray-300">
+                  {/* 00:00:00 */}
+                  {timeLeft.days > 0 && `${timeLeft.days}D : `}
+                  {timeLeft.hours}H : {timeLeft.minutes}M : {timeLeft.seconds}S
+                </span>
+              </div>
 
               <div className="flex flex-wrap items-center space-x-2 border border-gray-300 dark:border-gray-700 rounded-md p-2">
                 <CalendarDays className="h-4 w-4" />

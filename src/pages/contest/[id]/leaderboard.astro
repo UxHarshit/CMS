@@ -1,7 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import "../../../global.css";
-import RulesPage from "@/components/Contest/Rules/page.tsx";
+import LeaderBoardPage from "@/components/Contest/Leaderboard/page.tsx";
 import jwt from "jsonwebtoken";
 import { Debug } from "astro:components";
 
@@ -38,37 +38,35 @@ if (!token) {
     return Astro.redirect("/login");
   }
 }
-var out = {
-  ok: false,
-  data: null,
-};
-if (decoded_token) {
-  out = await fetch(`${baseUrl}/api/contest/rules`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token.value}`,
-    },
-    body: JSON.stringify({ contestId: id }),
-  })
-    .then(async (response) => {
-      if (response.ok) {
-        return { ok: true, data: await response.json() };
-      } else {
-        return { ok: false, data: "Failed" };
-      }
-    })
-    .catch((error) => {
-      return { ok: false, data: error };
-    });
+var all_ok = false;
 
-  if (out.ok === false) {
-    Astro.cookies.delete("token");
-    return Astro.redirect("/login");
-  }
+var out = await fetch(`${baseUrl}/api/contest/getDetails`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token.value}`,
+  },
+  body: JSON.stringify({ contestId: id }),
+})
+  .then(async (response) => {
+    if (response.ok) {
+      all_ok = true;
+      return {props: await response.json() };
+    } else {
+      all_ok = false;
+      return { data: "Failed" };
+    }
+  })
+  .catch((error) => {
+    all_ok = false;
+    return { data: "Failed" };
+  });
+
+if (!all_ok) {
+  return Astro.redirect("/dashboard");
 }
 ---
 
-<Layout title="Contest Rules">
-  <RulesPage client:load {...out.data as any} baseUrl={baseUrl} />
+<Layout title="Leaderboard">
+  <LeaderBoardPage {...out as any} id={id} baseUrl={baseUrl} client:load />
 </Layout>

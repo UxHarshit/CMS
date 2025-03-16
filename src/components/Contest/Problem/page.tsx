@@ -1,6 +1,7 @@
 import { Editor } from "@monaco-editor/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Nav from "./nav";
+import AntiCheatTool from "@/components/utils/AntiCheat";
 import {
   Card,
   CardContent,
@@ -13,6 +14,7 @@ import {
   AlertCircle,
   AlertCircleIcon,
   Car,
+  Clock,
   Copy,
   TriangleAlert,
 } from "lucide-react";
@@ -68,6 +70,7 @@ export default function ProblemPage(props: {
   score: number;
   username: string;
   problems: Problem[];
+  endTime: string;
   baseUrl: string;
 }) {
   const [questions, setQuestions] = useState<Problem[]>(props.problems);
@@ -75,6 +78,7 @@ export default function ProblemPage(props: {
   const [email, setEmail] = useState<string>("");
   const [image, setImage] = useState<string>("");
   const [username, setUsername] = useState<string>("");
+  const [endTime, setEndTime] = useState<string>("");
 
   const { toast } = useToast();
 
@@ -83,6 +87,7 @@ export default function ProblemPage(props: {
     setEmail(props.email);
     setImage(props.image);
     setScore(props.score);
+    setEndTime(props.endTime);
     setUsername(props.username);
   }, []);
 
@@ -105,6 +110,7 @@ export default function ProblemPage(props: {
               setEmail(data.email);
               setImage(data.image);
               setScore(data.score);
+              setEndTime(data.endTime);
               setUsername(data.username);
               setQuestions(data.problems);
             } else if (res.status === 404) {
@@ -166,6 +172,8 @@ export default function ProblemPage(props: {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   const [fullscreen, setFullscreen] = useState<boolean>(false);
+  const [firstTime, setFirstTime] = useState<boolean>(true);
+
   const enterFullscreen = () => {
     const element = document.documentElement; // Get the root element
     if (element.requestFullscreen) {
@@ -199,6 +207,7 @@ export default function ProblemPage(props: {
     } else {
       enterFullscreen();
     }
+    setFirstTime(false);
   };
 
   useEffect(() => {
@@ -221,6 +230,17 @@ export default function ProblemPage(props: {
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "F11") {
+        e.preventDefault();
+      }
+    });
   }, []);
 
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
@@ -456,6 +476,11 @@ export default function ProblemPage(props: {
       .catch((err) => {
         console.error(err);
       });
+    setOutput("");
+    setError([]);
+    setSubmission("");
+    setIFinalSubmission(undefined);
+    
     setCurrentQuestion(idx);
     if (Array.isArray(questions[idx].testCases)) {
       setInput(questions[idx].testCases.map((tc) => tc.input).join("\n"));
@@ -470,253 +495,401 @@ export default function ProblemPage(props: {
     setError([]);
   };
 
+  const [cheatDetected, setCheatDetected] = useState(false);
+  const [cheatMethod, setCheatMethod] = useState("");
+  const [cheatCount, setCheatCount] = useState(0);
+
+  const [secondsLeft, setSecondsLeft] = useState(5);
+  const [disqualified, setDisqualified] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const exitFullscreen = () => {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if ((document as any).webkitExitFullscreen) {
+      (document as any).webkitExitFullscreen(); // For Chrome, Safari and Opera
+    }
+  };
+
+  const handleCheatDetected = (method = "Unknown") => {
+    setCheatDetected(true);
+    setCheatMethod(method);
+
+    if (method === "Focus lost") {
+      setCheatCount((prev) => prev + 1);
+    }
+
+    if (method === "Tab changed") {
+      setCheatCount((prev) => prev + 1);
+    }
+
+    if (cheatCount >= 3) {
+      setDisqualified(true);
+      exitFullscreen();
+    }
+
+    setSecondsLeft(5);
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    // Start a new countdown timer
+    timerRef.current = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1 && timerRef.current) {
+          // Time's up - disqualify the user
+          clearInterval(timerRef.current);
+          setDisqualified(true);
+          exitFullscreen();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Clean up the timer when component unmounts
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  // Reset the warning (if user corrects their behavior)
+  const resetWarning = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    setCheatDetected(false);
+    setSecondsLeft(5);
+  };
+
   return (
-    <>
+    <AntiCheatTool
+      showMessage={true}
+      onCheatDetected={handleCheatDetected}
+      inactivityTimeoutSeconds={20}
+      allowedMouseLeaveCount={1}
+      strictMode={true}
+    >
       <Toaster />
-      {!fullscreen && (
-        // Can't switch to other tabs or full screen mode warning
+
+      {!fullscreen || disqualified ? (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
           <div className="container mx-auto px-4 py-24">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <AlertCircleIcon className="h-8 w-8 text-red-500" />
-                  <span className="ml-2">Important Notice</span>
+                  <span className="ml-2">
+                    {disqualified ? "Disqualified" : "Important Notice"}
+                  </span>
                 </CardTitle>
                 <CardDescription>
-                  Test is started can be accessed only in full screen mode.
-                  Please click on the button below to enter full screen mode.
+                  {disqualified
+                    ? `You have been disqualified for: ${cheatMethod}`
+                    : "Test is started can be accessed only in full screen mode. Please click on the button below to enter full screen mode."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col space-y-4">
-                <ul className="list-disc pl-5 space-y-2">
-                  <li>Do not switch to other tabs during the test</li>
-                  <li>Do not exit full screen mode</li>
-                  <li>Do not refresh the page</li>
-                </ul>
-                <div className="flex justify-center items-center">
-                  <TriangleAlert className="h-8 w-8 text-red-500" />
-                  <span className="ml-2">Warning</span>
-                  &nbsp;: Leaving test leads to &nbsp;
-                  <span className="text-red-500 font-bold">
-                    disqualification.
-                  </span>
-                </div>
-                <Button onClick={handleFullscreen}>
-                  Enter Full Screen Mode
-                </Button>
+                {!disqualified ? (
+                  <>
+                    <ul className="list-disc pl-5 space-y-2">
+                      <li>Do not switch to other tabs during the test</li>
+                      <li>Do not exit full screen mode</li>
+                      <li>Do not refresh the page</li>
+                    </ul>
+                    <div className="flex justify-center items-center">
+                      <TriangleAlert className="h-8 w-8 text-red-500" />
+                      <span className="ml-2">Warning</span>
+                      &nbsp;: Leaving test leads to &nbsp;
+                      <span className="text-red-500 font-bold">
+                        disqualification.
+                      </span>
+                    </div>
+                    <Button onClick={handleFullscreen}>
+                      Enter Full Screen Mode
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center space-y-4">
+                    <TriangleAlert className="h-16 w-16 text-red-500" />
+                    <p className="text-center text-lg font-bold">
+                      Your test has been terminated due to detected cheating.
+                    </p>
+                    <p className="text-center">
+                      Method detected: {cheatMethod}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
-      )}
-      {fullscreen && (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
-          <Nav
-            name={name}
-            email={email}
-            image={image}
-            username={username}
-            score={score}
-          />
-          <div className="mx-auto py-24 px-4 h-[calc(100vh-4rem)]">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full ">
-              <div className="lg:col-span-1 space-y-3 overflow-y-auto no-scrollbar">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Question Navigation</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {questions.map((q, index) => (
-                        <Button
-                          key={q.id}
-                          variant={
-                            index === currentQuestion ? "default" : "outline"
-                          }
-                          onClick={() => handleQuestionChange(index)}
-                        >
-                          Q{index + 1}
-                        </Button>
-                      ))}
+      ) : (
+        <div className="min-h-screen ">
+          {/* Cheating Warning Overlay */}
+          {cheatDetected && (
+            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+              <Card className="w-96 border-2 border-red-500">
+                <CardHeader className="bg-red-500 text-white">
+                  <CardTitle className="flex items-center">
+                    <AlertCircleIcon className="h-8 w-8" />
+                    <span className="ml-2">Warning: Cheating Detected</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="text-center">
+                      <p className="font-bold mb-2">Violation detected:</p>
+                      <p className="text-red-500">{cheatMethod}</p>
                     </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{currentQuestionIdx.title}</CardTitle>
-                    <CardDescription>Question Description</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{currentQuestionIdx.description}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Input Format</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{currentQuestionIdx.input_format}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Output Format</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{currentQuestionIdx.output_format}</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Constraints</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="list-disc pl-5 space-y-2">
-                      {currentQuestionIdx.constraints.map(
-                        (constraint, index) => (
-                          <li key={index}>{constraint}</li>
-                        )
-                      )}
-                    </ul>
-                  </CardContent>
-                </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Test Cases</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 divide-x divide-border">
-                      <div className="pr-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-sm">Input</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => {
-                              const input = Array.isArray(
-                                currentQuestionIdx.testCases
-                              )
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-6 w-6 text-red-500" />
+                      <span className="text-xl font-bold">{secondsLeft}s</span>
+                    </div>
+
+                    <p className="text-center text-sm">
+                      Return to the test immediately or you will be
+                      disqualified.
+                    </p>
+
+                    <Button
+                      className="bg-green-500 hover:bg-green-600"
+                      onClick={resetWarning}
+                    >
+                      I understand, continue test
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Your actual test content goes here */}
+          {fullscreen && !cheatDetected && (
+            <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+              <Nav
+                name={name}
+                email={email}
+                image={image}
+                username={username}
+                endTime={endTime}
+                id={window.location.pathname.split("/")[2]}
+                score={score}
+              />
+              <div className="mx-auto py-24 px-4 h-[calc(100vh-4rem)]">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full ">
+                  <div className="lg:col-span-1 prevent-select space-y-3 overflow-y-auto no-scrollbar">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Question Navigation</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2">
+                          {questions.map((q, index) => (
+                            <Button
+                              key={q.id}
+                              variant={
+                                index === currentQuestion
+                                  ? "default"
+                                  : "outline"
+                              }
+                              onClick={() => handleQuestionChange(index)}
+                            >
+                              Q{index + 1}
+                            </Button>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>{currentQuestionIdx.title}</CardTitle>
+                        <CardDescription>Question Description</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p>{currentQuestionIdx.description}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Input Format</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p>{currentQuestionIdx.input_format}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Output Format</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p>{currentQuestionIdx.output_format}</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Constraints</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="list-disc pl-5 space-y-2">
+                          {currentQuestionIdx.constraints.map(
+                            (constraint, index) => (
+                              <li key={index}>{constraint}</li>
+                            )
+                          )}
+                        </ul>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Test Cases</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 divide-x divide-border">
+                          <div className="pr-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-sm">Input</span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => {
+                                  const input = Array.isArray(
+                                    currentQuestionIdx.testCases
+                                  )
+                                    ? currentQuestionIdx.testCases
+                                        .map((tc) => tc.input)
+                                        .join("\n")
+                                    : currentQuestionIdx.testCases.input;
+                                  navigator.clipboard.writeText(input);
+                                }}
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <pre className="p-4 bg-secondary rounded-sm text-sm overflow-scroll">
+                              {Array.isArray(currentQuestionIdx.testCases)
                                 ? currentQuestionIdx.testCases
                                     .map((tc) => tc.input)
                                     .join("\n")
-                                : currentQuestionIdx.testCases.input;
-                              navigator.clipboard.writeText(input);
-                            }}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <pre className="p-4 bg-secondary rounded-sm text-sm overflow-scroll">
-                          {Array.isArray(currentQuestionIdx.testCases)
-                            ? currentQuestionIdx.testCases
-                                .map((tc) => tc.input)
-                                .join("\n")
-                            : currentQuestionIdx.testCases.input}
-                        </pre>
-                      </div>
-                      <div className="pl-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-sm">Output</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => {
-                              const output = Array.isArray(
-                                currentQuestionIdx.testCases
-                              )
+                                : currentQuestionIdx.testCases.input}
+                            </pre>
+                          </div>
+                          <div className="pl-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-sm">
+                                Output
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => {
+                                  const output = Array.isArray(
+                                    currentQuestionIdx.testCases
+                                  )
+                                    ? currentQuestionIdx.testCases
+                                        .map((tc) => tc.output)
+                                        .join("\n")
+                                    : currentQuestionIdx.testCases.output;
+                                  navigator.clipboard.writeText(output);
+                                }}
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <pre className="p-4 bg-secondary rounded-sm text-sm overflow-scroll ">
+                              {Array.isArray(currentQuestionIdx.testCases)
                                 ? currentQuestionIdx.testCases
                                     .map((tc) => tc.output)
                                     .join("\n")
-                                : currentQuestionIdx.testCases.output;
-                              navigator.clipboard.writeText(output);
-                            }}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
+                                : currentQuestionIdx.testCases.output}
+                            </pre>
+                          </div>
                         </div>
-                        <pre className="p-4 bg-secondary rounded-sm text-sm overflow-scroll ">
-                          {Array.isArray(currentQuestionIdx.testCases)
-                            ? currentQuestionIdx.testCases
-                                .map((tc) => tc.output)
-                                .join("\n")
-                            : currentQuestionIdx.testCases.output}
-                        </pre>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Right Side */}
+                  <div className="lg:col-span-2 space-y-4 max-lg:pt-4 overflow-y-auto h-[calc(100vh-6rem)] no-scrollbar ">
+                    <div className="flex justify-between items-center sticky top-0 z-[9] bg-gray-100 dark:bg-gray-900 px-4 py-2">
+                      <Select
+                        value={language}
+                        onValueChange={handleLanguageChange}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select Language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {languages.map((lang) => (
+                            <SelectItem key={lang.value} value={lang.value}>
+                              {lang.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-4">
+                        {isSolved ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                            <span className="text-sm font-semibold">
+                              Solved
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                            <span className="text-sm font-semibold">
+                              Not Solved
+                            </span>
+                          </div>
+                        )}
+
+                        <Button disabled={loading} onClick={handleRunCode}>
+                          Run Code
+                        </Button>
+                        <Button disabled={loading} onClick={handleSubmitCode}>
+                          Submit Code
+                        </Button>
+                        <Button variant="destructive" onClick={handleResetCode}>
+                          Reset Code
+                        </Button>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    <Card className="min-h-[400px]">
+                      <CardContent className="p-0">
+                        <Editor
+                          height="400px"
+                          language={language}
+                          value={currentCode}
+                          onChange={handleEditorChange}
+                          onValidate={handleEditorValidation}
+                          theme={currentTheme}
+                          options={{
+                            minimap: { enabled: false },
+                            fontSize: 14,
+                            tabSize: 4,
+                            scrollBeyondLastLine: false,
+                            insertSpaces: true,
+                            // Disable command f1
 
-              {/* Right Side */}
-              <div className="lg:col-span-2 space-y-4 max-lg:pt-4 overflow-y-auto h-[calc(100vh-6rem)] no-scrollbar ">
-                <div className="flex justify-between items-center sticky top-0 z-[9] bg-gray-100 dark:bg-gray-900 px-4 py-2">
-                  <Select value={language} onValueChange={handleLanguageChange}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Select Language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((lang) => (
-                        <SelectItem key={lang.value} value={lang.value}>
-                          {lang.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-4">
-                    {isSolved ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                        <span className="text-sm font-semibold">Solved</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full bg-red-500"></div>
-                        <span className="text-sm font-semibold">
-                          Not Solved
-                        </span>
-                      </div>
-                    )}
-
-                    <Button disabled={loading} onClick={handleRunCode}>
-                      Run Code
-                    </Button>
-                    <Button disabled={loading} onClick={handleSubmitCode}>
-                      Submit Code
-                    </Button>
-                    <Button variant="destructive" onClick={handleResetCode}>
-                      Reset Code
-                    </Button>
-                  </div>
-                </div>
-                <Card className="min-h-[400px]">
-                  <CardContent className="p-0">
-                    <Editor
-                      height="400px"
-                      language={language}
-                      value={currentCode}
-                      onChange={handleEditorChange}
-                      onValidate={handleEditorValidation}
-                      theme={currentTheme}
-                      options={{
-                        minimap: { enabled: false },
-                        fontSize: 14,
-                        tabSize: 4,
-                        scrollBeyondLastLine: false,
-                        insertSpaces: true,
-                        // Disable command f1
-
-                        autoIndent: "full",
-                        scrollbar: {
-                          alwaysConsumeMouseWheel: false,
-                        },
-                      }}
-                    />
-                  </CardContent>
-                  {/* {error.length > 0 && (
+                            autoIndent: "full",
+                            scrollbar: {
+                              alwaysConsumeMouseWheel: false,
+                            },
+                          }}
+                        />
+                      </CardContent>
+                      {/* {error.length > 0 && (
                                         <Alert variant="destructive">
                                             <AlertCircle className='h-4 w-4' />
                                             <AlertTitle>Syntax Errors</AlertTitle>
@@ -729,7 +902,7 @@ export default function ProblemPage(props: {
                                             </AlertDescription>
                                         </Alert>
                                     )} */}
-                  {/* { success.length > 0 && (
+                      {/* { success.length > 0 && (
                                         <Alert variant="default">
                                             <AlertCircle className='h-4 w-4' />
                                             <AlertTitle>Success</AlertTitle>
@@ -738,170 +911,176 @@ export default function ProblemPage(props: {
                                             </AlertDescription>
                                         </Alert>
                                     )} */}
-                </Card>
+                    </Card>
 
-                <div className="gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Submission Output</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {submission ? (
-                        <div>
-                          <div
-                            className={`p-4 rounded-md text-center font-bold ${
-                              submission === "Accepted"
-                                ? "bg-green-100 text-green-800"
-                                : submission === "Time Limit Exceeded"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : submission === "Runtime Error"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {submission === "Acccepted"
-                              ? "Passed Public test case"
-                              : submission}
-                          </div>
-                          {submission === "Wrong Answer" &&
-                            expectedOutput &&
-                            actualOutput && (
-                              <div className="mt-4 space-y-2">
-                                <div>
-                                  <h4 className="font-semibold">
-                                    Expected Output:
-                                  </h4>
-                                  <pre
-                                    className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll
+                    <div className="gap-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle>Submission Output</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {submission ? (
+                            <div>
+                              <div
+                                className={`p-4 rounded-md text-center font-bold ${
+                                  submission === "Accepted"
+                                    ? "bg-green-100 text-green-800"
+                                    : submission === "Time Limit Exceeded"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : submission === "Runtime Error"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-red-100 text-red-800"
+                                }`}
+                              >
+                                {submission === "Acccepted"
+                                  ? "Passed Public test case"
+                                  : submission}
+                              </div>
+                              {submission === "Wrong Answer" &&
+                                expectedOutput &&
+                                actualOutput && (
+                                  <div className="mt-4 space-y-2">
+                                    <div>
+                                      <h4 className="font-semibold">
+                                        Expected Output:
+                                      </h4>
+                                      <pre
+                                        className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll
                                                                 "
-                                  >
-                                    {expectedOutput}
-                                  </pre>
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold">
-                                    Your Output:
-                                  </h4>
-                                  <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">
-                                    {actualOutput}
-                                  </pre>
-                                </div>
+                                      >
+                                        {expectedOutput}
+                                      </pre>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-semibold">
+                                        Your Output:
+                                      </h4>
+                                      <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">
+                                        {actualOutput}
+                                      </pre>
+                                    </div>
+                                  </div>
+                                )}
+                              {submission === "Compilation Error" &&
+                                compileOutput && (
+                                  <div className="mt-4">
+                                    <h4 className="font-semibold">
+                                      Compile Output:
+                                    </h4>
+                                    <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">
+                                      {compileOutput}
+                                    </pre>
+                                  </div>
+                                )}
+                              {submission.includes("Runtime Error") &&
+                                compileOutput && (
+                                  <div className="mt-4">
+                                    <h4 className="font-semibold">
+                                      Runtime Error:
+                                    </h4>
+                                    <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">
+                                      {compileOutput}
+                                    </pre>
+                                  </div>
+                                )}
+                            </div>
+                          ) : (
+                            !submission &&
+                            error.length > 0 &&
+                            iFinalSubmission && (
+                              <div className="text-center text-gray-500">
+                                No submission yet
                               </div>
-                            )}
-                          {submission === "Compilation Error" &&
-                            compileOutput && (
-                              <div className="mt-4">
-                                <h4 className="font-semibold">
-                                  Compile Output:
-                                </h4>
-                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">
-                                  {compileOutput}
-                                </pre>
-                              </div>
-                            )}
-                          {submission.includes("Runtime Error") &&
-                            compileOutput && (
-                              <div className="mt-4">
-                                <h4 className="font-semibold">
-                                  Runtime Error:
-                                </h4>
-                                <pre className="bg-gray-100 p-2 rounded text-gray-800 dark-text-gray-200 overflow-scroll">
-                                  {compileOutput}
-                                </pre>
-                              </div>
-                            )}
-                        </div>
-                      ) : (
-                        !submission &&
-                        error.length > 0 &&
-                        iFinalSubmission && (
-                          <div className="text-center text-gray-500">
-                            No submission yet
-                          </div>
-                        )
-                      )}
+                            )
+                          )}
 
-                      {loading && (
-                        <div className="flex justify-center items-center mt-4">
-                          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900 dark:border-gray-100"></div>
-                        </div>
-                      )}
-                      {iFinalSubmission && !iFinalSubmission.isAc ? (
-                        <div className="mt-4">
-                          <h4 className="font-semibold">Test Cases:</h4>
-                          <div className="overflow-scroll">
-                            <table className="w-full">
-                              <thead>
-                                <tr>
-                                  <th className="border border-gray-300 dark:border-gray-700">
-                                    Test Case
-                                  </th>
-                                  <th className="border border-gray-300 dark:border-gray-700">
-                                    Status
-                                  </th>
-                                  <th className="border border-gray-300 dark:border-gray-700">
-                                    Time
-                                  </th>
-                                  <th className="border border-gray-300 dark:border-gray-700">
-                                    Memory
-                                  </th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {getReversedData().map(([tcId, tc], index) => (
-                                  <tr key={index}>
-                                    <td className="border border-gray-300 dark:border-gray-700">
-                                      #{index + 1}
-                                    </td>
-                                    <td className="border border-gray-300 dark:border-gray-700">
-                                      {tc.status === 3
-                                        ? "Accepted"
-                                        : tc.status === 4
-                                        ? "Wrong Answer"
-                                        : tc.status === 5
-                                        ? "Time Limit Exceeded"
-                                        : tc.status === 6
-                                        ? "Compilation Error"
-                                        : tc.status === 7
-                                        ? "Runtime Error"
-                                        : tc.status === 8
-                                        ? "Compilation Error"
-                                        : tc.status === -1
-                                        ? "Not Processed"
-                                        : "Compilation Error"}
-                                    </td>
-                                    <td className="border border-gray-300 dark:border-gray-700">
-                                      {tc.time} ms
-                                    </td>
-                                    <td className="border border-gray-300 dark:border-gray-700">
-                                      {tc.memory} KB
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      ) : iFinalSubmission && iFinalSubmission.isAc ? (
-                        <div className="mt-4">
-                          <h4 className="font-semibold">All TC Passed REP++</h4>
-                        </div>
-                      ) : null}
-                    </CardContent>
-                  </Card>
+                          {loading && (
+                            <div className="flex justify-center items-center mt-4">
+                              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900 dark:border-gray-100"></div>
+                            </div>
+                          )}
+                          {iFinalSubmission && !iFinalSubmission.isAc ? (
+                            <div className="mt-4">
+                              <h4 className="font-semibold">Test Cases:</h4>
+                              <div className="overflow-scroll">
+                                <table className="w-full">
+                                  <thead>
+                                    <tr>
+                                      <th className="border border-gray-300 dark:border-gray-700">
+                                        Test Case
+                                      </th>
+                                      <th className="border border-gray-300 dark:border-gray-700">
+                                        Status
+                                      </th>
+                                      <th className="border border-gray-300 dark:border-gray-700">
+                                        Time
+                                      </th>
+                                      <th className="border border-gray-300 dark:border-gray-700">
+                                        Memory
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {getReversedData().map(
+                                      ([tcId, tc], index) => (
+                                        <tr key={index}>
+                                          <td className="border border-gray-300 dark:border-gray-700">
+                                            #{index + 1}
+                                          </td>
+                                          <td className="border border-gray-300 dark:border-gray-700">
+                                            {tc.status === 3
+                                              ? "Accepted"
+                                              : tc.status === 4
+                                              ? "Wrong Answer"
+                                              : tc.status === 5
+                                              ? "Time Limit Exceeded"
+                                              : tc.status === 6
+                                              ? "Compilation Error"
+                                              : tc.status === 7
+                                              ? "Runtime Error"
+                                              : tc.status === 8
+                                              ? "Compilation Error"
+                                              : tc.status === -1
+                                              ? "Not Processed"
+                                              : "Compilation Error"}
+                                          </td>
+                                          <td className="border border-gray-300 dark:border-gray-700">
+                                            {tc.time} ms
+                                          </td>
+                                          <td className="border border-gray-300 dark:border-gray-700">
+                                            {tc.memory} KB
+                                          </td>
+                                        </tr>
+                                      )
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          ) : iFinalSubmission && iFinalSubmission.isAc ? (
+                            <div className="mt-4">
+                              <h4 className="font-semibold">
+                                All TC Passed REP++
+                              </h4>
+                            </div>
+                          ) : null}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
                 </div>
               </div>
+              <footer className="bg-white dark:bg-gray-800 py-8  mt-24">
+                <div className="container mx-auto px-4">
+                  <div className="text-center text-gray-600 dark:text-gray-300">
+                    &copy; 2024 CodeContest Pro. All rights reserved.
+                  </div>
+                </div>
+              </footer>
             </div>
-          </div>
-          <footer className="bg-white dark:bg-gray-800 py-8  mt-24">
-            <div className="container mx-auto px-4">
-              <div className="text-center text-gray-600 dark:text-gray-300">
-                &copy; 2024 CodeContest Pro. All rights reserved.
-              </div>
-            </div>
-          </footer>
+          )}
         </div>
       )}
-    </>
+    </AntiCheatTool>
   );
 }

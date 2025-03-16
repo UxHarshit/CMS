@@ -3,11 +3,20 @@ WORKDIR /app
 
 COPY . .
 
+# Accept Build Arguments
+ARG REACT_APP_BASE_URL
+ARG IPINFO_TOKEN
+
+# Set them as environment variables
+ENV REACT_APP_BASE_URL=${REACT_APP_BASE_URL}
+ENV IPINFO_TOKEN=${IPINFO_TOKEN}
+
 RUN npm install
 RUN npm run build
 
 ENV HOST=0.0.0.0
 ENV PORT=4321
 EXPOSE 4321
+
 # Start
 CMD node ./dist/server/entry.mjs
