@@ -258,7 +258,7 @@ const acceptController = async (req, res) => {
     const contestId = req.body.contestId;
 
     try {
-        const contestParticipant = await Contest_Participants.findOne({
+        var contestParticipant = await Contest_Participants.findOne({
             where: { contestId, userId: user.id }
         });
 
