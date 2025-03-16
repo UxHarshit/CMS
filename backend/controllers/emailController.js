@@ -7,8 +7,6 @@ const transporter = nodemailer.createTransport({
     // name: 'codecontestpro.tech',
     domain: 'codecontestpro.tech',
     secure: false,
-    debug: true,
-    logger: true,
     auth: {
         user: "api",
         pass: process.env.SERVER_MAIL_PASSWORD

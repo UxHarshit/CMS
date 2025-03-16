@@ -31,7 +31,7 @@ const resendVerificationController = async (req, res) => {
             return res.status(400).json({ message: 'User is already verified', code: "ALREADY_VERIFIED" });
         }
 
-        const verifyMail = await VerifyMail.findOne({ where: { userId: user.id } });
+        var verifyMail = await VerifyMail.findOne({ where: { userId: user.id } });
 
         if (verifyMail && new Date() - verifyMail.createdAt < 300000) { 
             return res.status(400).json({ message: 'Verification mail already sent', code: "ALREADY_SENT" });

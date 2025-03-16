@@ -1,4 +1,4 @@
-import { Contest_Participants, User, UserProfile, Contest_Problems, Problems, TestCases, Contests } from '../models/index.js';
+import { Contest_Participants, User, UserProfile, Contest_Problems, Problems, TestCases, Contests, Submissions } from '../models/index.js';
 import jwt from 'jsonwebtoken';
 
 const joinContestController = async (req, res) => {
@@ -185,9 +185,10 @@ const problemController = async (req, res) => {
         }
 
         if (contestParticipant.is_disqualified) {
-            return res.status(400).json({ message: 'You are disqualified from the contest',
+            return res.status(400).json({
+                message: 'You are disqualified from the contest',
                 errCode: 'disqualified'
-             });
+            });
         }
 
         if (contestParticipant.isFirstTime) {
@@ -239,7 +240,7 @@ const problemController = async (req, res) => {
             username: user.username,
             name: user.name,
             email: user.email,
-            endTime : contest.endDate,
+            endTime: contest.endDate,
             image: user.profile.image,
             score: contestParticipant.score,
             problems: problemsArray
@@ -283,4 +284,97 @@ const acceptController = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 }
-export { joinContestController, rulesController, problemController, isFirstTime, acceptController };
+
+
+const contestDetails = async (req, res) => {
+    const contestId = req.body.contestId;
+
+    try {
+        const contest = await Contests.findOne({
+            where: { id: contestId }
+        });
+
+        if (!contest) {
+            return res.status(404).json({ message: 'Contest not found' });
+        }
+
+        // Count number of participants
+        const participants = await Contest_Participants.findAll({
+            where: { contestId }
+        });
+
+        var count = 0;
+
+
+        if (participants) {
+            count = participants.length;
+        }
+
+        return res.status(200).json({
+            name: contest.name,
+            countPart: count,
+            startDate: contest.startDate,
+            endDate: contest.endDate,
+            duration: contest.duration,
+            description: contest.description
+        });
+
+    } catch (error) {
+        console.log("Error: ", error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+const getParticipantsByContestId = async (req, res) => {
+    const contestId = req.params.id;
+
+    try {
+        const participants = await Contest_Participants.findAll({
+            where: { contestId },
+            include: {
+                model: User,
+                as: 'user',
+                attributes: ['username','name'],
+                include: {
+                    model: UserProfile,
+                    as: 'profile',
+                    attributes: ['image']
+                }
+            },
+            attributes: ['score', 'is_disqualified', 'last_submission_at'],
+            order: [
+                ['score', 'DESC'],
+                ['last_submission_at', 'ASC']
+            ]
+        });
+
+
+        if (!participants) {
+            return res.status(404).json({ message: 'Participants not found' });
+        }
+
+        const participantsArray = [];
+
+        for (const participant of participants) {
+            if(participant.is_disqualified) {
+                continue;
+            }
+            participantsArray.push({
+                username: participant.user.username,
+                name: participant.user.name,
+                score: participant.score,
+                last_submission_at: participant.last_submission_at,
+                is_disqualified: participant.is_disqualified,
+                image: participant.user.profile.image
+            });
+        }
+
+        return res.status(200).json({ participants: participantsArray });
+
+    } catch (error) {
+        console.log("Error: ", error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+
+export { joinContestController, rulesController, problemController, isFirstTime, acceptController, contestDetails, getParticipantsByContestId };
