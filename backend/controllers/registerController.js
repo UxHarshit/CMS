@@ -6,8 +6,9 @@ import qs from 'qs';
 
 
 const registerController = async (req, res) => {
-  const transaction = await sequelize.transaction();
   try {
+    const transaction = await sequelize.transaction();
+
     const { name, email, password, institution,token } = req.body;
     const { code, value } = institution;
     if (!token) {
