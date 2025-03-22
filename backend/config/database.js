@@ -5,6 +5,12 @@ const sequelize = new Sequelize('cms_db', 'cms_user', 'Password@7890', {
   host: '139.59.69.105',
   dialect: 'mysql',
   logging: false, // Disable logging for cleaner output
+  pool: {
+    max: 10,
+    min: 0,
+    idle: 10000, // Set the maximum time, in milliseconds, that a connection can be idle before being released
+    acquire: 30000 // Set the maximum time, in milliseconds, that pool will try to get connection before throwing error
+  }
 });
 
 // Test the connection
