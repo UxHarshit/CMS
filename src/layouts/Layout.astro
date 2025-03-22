@@ -21,8 +21,9 @@ const props = Astro.props;
       rel="stylesheet"
     />
     <title>{Astro.props.title} - CC Pro</title>
+    <ClientRouter />
   </head>
-  <body>
+  <body transition:animate="initial">
     <slot />
   </body>
 </html>
@@ -38,7 +39,18 @@ const props = Astro.props;
 </style>
 
 <script>
+  
   (function () {
+
+    document.addEventListener("astro:after-swap", () => {
+      const darkMode = localStorage.getItem("darkMode");
+      if (darkMode === "true") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    });
+
     const darkMode = localStorage.getItem("darkMode");
     if (darkMode === "true") {
       document.documentElement.classList.add("dark");

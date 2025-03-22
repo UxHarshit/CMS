@@ -88,5 +88,5 @@ if (decoded_token) {
 
 
 <Layout title="Dashboard">
-  <DashboardPage client:load {...out as any} baseUrl={baseUrl} />
+  <DashboardPage transition:persist  client:load {...out as any} baseUrl={baseUrl} />
 </Layout>

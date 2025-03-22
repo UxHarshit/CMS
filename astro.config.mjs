@@ -32,7 +32,7 @@ export default defineConfig({
   })
 ],
   output: 'server',
-  site: "http://codecontestpro.tech",
+  site: "https://codecontestpro.tech",
 
   adapter: node({
     mode: 'standalone'

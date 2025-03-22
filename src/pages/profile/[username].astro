@@ -26,7 +26,7 @@ if (data.ok) {
 {!user && <title>User Not Found</title>}
 <Layout>
   {user && 
-    <ProfilePage client:load user={user} />
+    <ProfilePage transition:persist client:load user={user} />
   }
   {!user && 
     <UserNotFound client:load />

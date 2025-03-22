@@ -199,10 +199,10 @@ export default function Page({
                               size="sm"
                               variant="outline"
                               className="ml-2"
-                                onClick={() => {
-                                    window.location.href =
-                                    "/contest/" + contest.id + "/leaderboard";
-                                }}
+                              onClick={() => {
+                                window.location.href =
+                                  "/contest/" + contest.id + "/leaderboard";
+                              }}
                             >
                               Leaderboard
                             </Button>
@@ -242,16 +242,11 @@ export default function Page({
                         </div>
                         <p className="text-sm mb-2">{contest.description}</p>
                         <div className="flex items-center justify-end">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => {
-                              window.location.href =
-                                "/contest/" + contest.id + "/leaderboard";
-                            }}
-                          >
-                            Leaderboard
-                          </Button>
+                          <a href={"/contest/" + contest.id + "/leaderboard"}>
+                            <Button size="sm" variant="default">
+                              Leaderboard
+                            </Button>
+                          </a>
                         </div>
                       </li>
                     );
