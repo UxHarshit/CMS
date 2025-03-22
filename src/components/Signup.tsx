@@ -39,11 +39,13 @@ import {
   CommandList,
 } from "./ui/command";
 import { cn } from "@/lib/utils";
+import { set } from "astro:schema";
 
 export default function SignupPage({ baseUrl }: { baseUrl: string }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isTermsAccepted, setIsTermsAccepted] = useState(false);
 
@@ -88,10 +90,12 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     const { name, email, password, confirmPassword } = formData;
 
     if (!token) {
       setError("Please complete the captcha");
+      setLoading(false);
       return;
     }
     formData.token = token;
@@ -99,26 +103,35 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
     formData.institution = institution;
     if (!institution.code || !institution.value) {
       setError("Please select your institution");
+      setLoading(false);
       return;
     }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      setLoading(false);
+
       return;
     }
     const [firstName, lastName] = name.split(" ");
 
     if (!firstName || !lastName) {
       setError("Please enter your full name");
+      setLoading(false);
+
       return;
     }
 
     if (firstName.length < 2 || lastName.length < 2) {
       setError("First name and last name must be at least 2 characters long");
+      setLoading(false);
+
       return;
     }
 
     if (firstName.length > 50 || lastName.length > 50) {
       setError("First name and last name must be at most 50 characters long");
+      setLoading(false);
+
       return;
     }
 
@@ -129,11 +142,15 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
       lastName.match(/[^a-zA-Z]/)
     ) {
       setError("First name and last name must contain only alphabets");
+      setLoading(false);
+
       return;
     }
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters long");
+      setLoading(false);
+
       return;
     }
 
@@ -146,11 +163,15 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
       setError(
         "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character"
       );
+      setLoading(false);
+
       return;
     }
 
     if (!email.includes("@")) {
       setError("Invalid email address");
+      setLoading(false);
+
       return;
     }
 
@@ -175,6 +196,8 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
         console.error(err);
         setError("An error occurred. Please try again later");
       });
+      setLoading(false);
+
   };
 
   const toggleDarkMode = () => {
@@ -399,13 +422,20 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
                   </a>
                 </label>
               </div>
-              <Button
-                disabled={!isTermsAccepted}
-                type="submit"
-                className="w-full"
-              >
-                Register
-              </Button>
+              {loading ? (
+                <Button disabled className="w-full">
+                  Registering...
+                  </Button>
+                  ) : (
+                    <Button
+                      disabled={!isTermsAccepted}
+                      type="submit"
+                      className="w-full"
+                    >
+                      Register
+                    </Button>
+                  )}
+      
             </form>
           </CardContent>
           <CardFooter>
@@ -424,7 +454,7 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
 
       <footer className="bg-white dark:bg-gray-800 py-8">
         <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-          <p>&copy; 2024 CodeContest Pro. All rights reserved.</p>
+          <p>&copy; 2025 CodeContest Pro. All rights reserved.</p>
         </div>
       </footer>
     </div>

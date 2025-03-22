@@ -9,6 +9,7 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [enableSubmit, setEnableSubmit] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
     const [error, setError] = useState('');
 
@@ -75,11 +76,14 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setEnableSubmit(false);
+        setIsLoading(true);
+
         const { email, password } = formData;
 
         if (!email || !password) {
             setError('Please fill all fields');
             setEnableSubmit(true);
+            setIsLoading(false);
             return;
         }
 
@@ -102,7 +106,8 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
                 }
                 localStorage.setItem('token', data.token);
 
-                document.cookie = `token=${data.token}; path=/`;
+                // cookie with time expiry of 7 days
+                document.cookie = `token=${data.token}; max-age=${60 * 60 * 24 * 7}; path=/`;
                 window.location.replace('/dashboard');
                 history.pushState({}, '', '/dashboard');
                 window.addEventListener('popstate', () => {
@@ -114,6 +119,8 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
                 setError('An error occurred. Please try again')
                 setEnableSubmit(true);
             })
+
+            setIsLoading(false);
 
     }
 
@@ -194,9 +201,14 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
                             </div>
                             {error && <p className="text-red-500 text-sm">{error}</p>}
 
-                            <Button
-                                disabled={!enableSubmit}
-                                type="submit" className="w-full" >Login</Button>
+                            {isLoading ? 
+                                <Button disabled className="w-full">Loading...</Button> 
+                            :
+                                <Button
+                                    disabled={!enableSubmit}
+                                    type="submit" className="w-full" >Login</Button>
+                            }
+                                    
                         </form>
                     </CardContent>
                     <CardFooter>
@@ -212,7 +224,7 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
 
             <footer className="bg-white dark:bg-gray-800 py-8">
                 <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-                    <p>&copy; 2024 CodeContest Pro. All rights reserved.</p>
+                    <p>&copy; 2025 CodeContest Pro. All rights reserved.</p>
                 </div>
             </footer>
         </div>

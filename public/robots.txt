@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://codecontestpro.tech/sitemap-index.xml

@@ -35,6 +35,8 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
   const focusCheckInterval = useRef<NodeJS.Timeout | null>(null);
   const mouseCheckInterval = useRef<NodeJS.Timeout | null>(null);
 
+  const [copyContent, setCopyContent] = useState<string>("");
+
   useEffect(() => {
     // Reference for original window dimensions
     let windowWidth = window.innerWidth;
@@ -58,7 +60,7 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
       if (!showMessage) return;
 
       const message = document.createElement("div");
-      message.textContent = `Cheating detected: ${method}`;
+      message.textContent = `Voilation detected: ${method}`;
       message.style.position = "fixed";
       message.style.top = "10px";
       message.style.left = "50%";
@@ -92,6 +94,7 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
         e.ctrlKey && e.shiftKey && e.key === "I",
         e.ctrlKey && e.shiftKey && e.key === "J",
         e.ctrlKey && e.shiftKey && e.key === "K",
+        e.altKey,
         e.ctrlKey && e.key === "u",
         e.altKey && e.key === "u",
         // Print screen / screen capture
@@ -104,6 +107,12 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
         e.key === "F7",
         e.key === "Meta" || e.key === "Windows",
       ];
+
+      console.log(e.key);
+
+      // paste key listener
+      if (e.key === "v" && e.ctrlKey) {
+      }
 
       if (blockedKeys.includes(true)) {
         e.preventDefault();
@@ -144,7 +153,7 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
 
       // If mouse hasn't moved for the specified timeout period
       if (timeSinceLastMove > inactivityTimeoutSeconds * 1000) {
-        showCheatDetectedMessage("Mouse inactivity detected");
+        //showCheatDetectedMessage("Mouse inactivity detected");
         // Reset the timer to avoid repeated alerts
         lastMouseMoveTime.current = currentTime;
       }
@@ -159,6 +168,7 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
       if (timeSinceLastFocus > inactivityTimeoutSeconds * 1000) {
         //("Focus inactivity detected");
         // Reset the timer to avoid repeated alerts
+        //showCheatDetectedMessage("Focus inactivity detected");
         lastFocusTime.current = currentTime;
       }
     };
@@ -192,13 +202,27 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
     // Detect copy attempts
     const handleCopy = (e: ClipboardEvent): void => {
       e.preventDefault();
-      showCheatDetectedMessage("Copy attempted");
+      // showCheatDetectedMessage("Copy attempted");
+      const selection = window.getSelection();
+      if (selection) {
+        setCopyContent(selection.toString());
+        console.log(selection.toString());
+      }
+      //showCheatDetectedMessage("Copy attempted");
     };
 
     // Detect paste attempts
     const handlePaste = (e: ClipboardEvent): void => {
       e.preventDefault();
-      showCheatDetectedMessage("Paste attempted");
+      // showCheatDetectedMessage("Paste attempted");
+      const pastedText = e.clipboardData ? e.clipboardData.getData("text") : "";
+      if (pastedText && pastedText !== copyContent) {
+        showCheatDetectedMessage("Copy-paste detected");
+      }
+      if (pastedText) {
+        showCheatDetectedMessage(`${pastedText}`);
+        console.log(pastedText);
+      }
     };
 
     // Detect if the page is being printed
@@ -238,6 +262,14 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
     }
 
     // Add all event listeners
+
+    const editor = document.getElementById("editor");
+
+    if (editor) {
+      editor.addEventListener("copy", handleCopy as EventListener);
+      editor.addEventListener("paste", handlePaste as EventListener);
+    }
+
     document.addEventListener("contextmenu", handleContextMenu);
     document.addEventListener("keydown", handleKeyDown as EventListener);
     document.addEventListener("mouseleave", handleMouseLeave as EventListener);

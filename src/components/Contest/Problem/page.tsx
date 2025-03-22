@@ -480,7 +480,7 @@ export default function ProblemPage(props: {
     setError([]);
     setSubmission("");
     setIFinalSubmission(undefined);
-    
+
     setCurrentQuestion(idx);
     if (Array.isArray(questions[idx].testCases)) {
       setInput(questions[idx].testCases.map((tc) => tc.input).join("\n"));
@@ -512,16 +512,28 @@ export default function ProblemPage(props: {
   };
 
   const handleCheatDetected = (method = "Unknown") => {
+    if (disqualified) {
+      return;
+    }
+    if (cheatDetected) {
+      return; // prevent multiple warnings
+    }
     setCheatDetected(true);
     setCheatMethod(method);
+    toast({
+      title: "Voilation Detected",
+      description: `${cheatCount + 1}/5 warnings`,
+      variant: "destructive",
+      duration: 5000,
+    });
 
     if (method === "Focus lost") {
-      setCheatCount((prev) => prev + 1);
+      setCheatCount(cheatCount + 1);
     } else if (method === "Tab changed") {
-      setCheatCount((prev) => prev + 1);
+      setCheatCount(cheatCount + 1);
     }
 
-    if (cheatCount >= 5) {
+    if (cheatCount + 1 >= 5) {
       setDisqualified(true);
       exitFullscreen();
     }
@@ -617,11 +629,20 @@ export default function ProblemPage(props: {
                   <div className="flex flex-col items-center space-y-4">
                     <TriangleAlert className="h-16 w-16 text-red-500" />
                     <p className="text-center text-lg font-bold">
-                      Your test has been terminated due to detected cheating.
+                      Your test has been terminated due to voilation of rules and regulations. <br />
+                      Contact the your POC to apeal for the decision.
                     </p>
                     <p className="text-center">
                       Method detected: {cheatMethod}
                     </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        window.location.href = "/dashboard";
+                      }}
+                    >
+                      Return to Dashboard
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -637,7 +658,7 @@ export default function ProblemPage(props: {
                 <CardHeader className="bg-red-500 text-white">
                   <CardTitle className="flex items-center">
                     <AlertCircleIcon className="h-8 w-8" />
-                    <span className="ml-2">Warning: Cheating Detected</span>
+                    <span className="ml-2">Warning: Voilation Detected</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -866,6 +887,7 @@ export default function ProblemPage(props: {
                     <Card className="min-h-[400px]">
                       <CardContent className="p-0">
                         <Editor
+                        className="editor"
                           height="400px"
                           language={language}
                           value={currentCode}

@@ -13,6 +13,7 @@
     "@astrojs/node": "^9.1.2",
     "@astrojs/partytown": "^2.1.4",
     "@astrojs/react": "^4.2.1",
+    "@astrojs/sitemap": "^3.3.0",
     "@astrojs/tailwind": "^6.0.0",
     "@hcaptcha/react-hcaptcha": "^1.12.0",
     "@monaco-editor/react": "^4.6.0",
