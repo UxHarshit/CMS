@@ -11,13 +11,21 @@ import {
 // import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "./ui/toaster";
 
 export default function Verify({ baseUrl }: { baseUrl: string }) {
   const { toast } = useToast();
   const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    const sent = localStorage.getItem("sent");
+    if(!sent){
+      localStorage.setItem("sent", "true");
+      handleResendVerification();
+    }
+  }, []);
 
   const handleResendVerification = async () => {
     setIsResending(true);

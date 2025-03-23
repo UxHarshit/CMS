@@ -163,6 +163,10 @@ export default function ProblemPage(props: {
   const [actualOutput, setActualOutput] = useState<string>("");
   const [compileOutput, setCompileOutput] = useState<string>("");
 
+  // Delay to prevent multiple submit spam req
+  // prev time when submit button was clicked
+  const [prevTime, setPrevTime] = useState<number>(0);
+
   const [score, setScore] = useState<number>(0);
 
   const [submission, setSubmission] = useState<string>("");
@@ -190,6 +194,8 @@ export default function ProblemPage(props: {
         setFullscreen(true);
       } else {
         setFullscreen(false);
+        handleCheatDetected("Full screen exit");
+        setFullscreen(true);
       }
     };
 
@@ -303,6 +309,19 @@ export default function ProblemPage(props: {
     return Object.entries(iFinalSubmission?.data || {}); // Return original order if no AC
   };
   const handleRunCode = async () => {
+
+    if (Date.now() - prevTime < 10000) {
+      toast({
+        title: "Slow Down",
+        description: "Please wait for 10 seconds before running again",
+        variant: "default",
+        duration: 5000,
+      });
+      return;
+    }
+
+    setPrevTime(Date.now());
+
     // Clear previous output
     setOutput("");
     setError([]);
@@ -371,6 +390,18 @@ export default function ProblemPage(props: {
 
   const handleSubmitCode = async () => {
     // Clear previous output
+
+    if (Date.now() - prevTime < 10000) {
+      toast({
+        title: "Slow Down",
+        description: "Please wait for 10 seconds before submitting again",
+        variant: "default",
+        duration: 5000,
+      });
+      return;
+    }
+
+    setPrevTime(Date.now());
 
     if (isSolved) {
       toast({
@@ -499,7 +530,7 @@ export default function ProblemPage(props: {
   const [cheatMethod, setCheatMethod] = useState("");
   const [cheatCount, setCheatCount] = useState(0);
 
-  const [secondsLeft, setSecondsLeft] = useState(5);
+  const [secondsLeft, setSecondsLeft] = useState(15);
   const [disqualified, setDisqualified] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -538,7 +569,7 @@ export default function ProblemPage(props: {
       exitFullscreen();
     }
 
-    setSecondsLeft(5);
+    setSecondsLeft(7);
 
     // Clear any existing timer
     if (timerRef.current) {
@@ -571,6 +602,10 @@ export default function ProblemPage(props: {
 
   // Reset the warning (if user corrects their behavior)
   const resetWarning = () => {
+    if(cheatMethod === "Full screen exit") {
+      enterFullscreen();
+      setFullscreen(true);
+    }
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
@@ -704,7 +739,7 @@ export default function ProblemPage(props: {
               />
               <div className="mx-auto py-24 px-4 h-[calc(100vh-4rem)]">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full ">
-                  <div className="lg:col-span-1 prevent-select space-y-3 overflow-y-auto no-scrollbar">
+                  <div className="lg:col-span-1  prevent-select space-y-3 overflow-y-auto no-scrollbar">
                     <Card>
                       <CardHeader>
                         <CardTitle>Question Navigation</CardTitle>
@@ -772,8 +807,8 @@ export default function ProblemPage(props: {
                         <CardTitle>Test Cases</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-2 divide-x divide-border">
-                          <div className="pr-4">
+                        <div className="flex flex-col gap-y-4">
+                          <div className="">
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-medium text-sm">Input</span>
                               <Button
@@ -802,7 +837,7 @@ export default function ProblemPage(props: {
                                 : currentQuestionIdx.testCases.input}
                             </pre>
                           </div>
-                          <div className="pl-4">
+                          <div className=" ">
                             <div className="flex items-center justify-between mb-2">
                               <span className="font-medium text-sm">
                                 Output

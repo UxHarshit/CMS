@@ -190,8 +190,7 @@ export default function LeaderBoardPage({
               {/* Easter Egg Random quotes in quotes form */}
               <div className="mt-2 flex justify-center items-center space-x-1">
                 {" "}
-                <Quote className="h-6 w-6  text-blue-400" />
-                {" "}
+                <Quote className="h-6 w-6  text-blue-400" />{" "}
                 <span className="italic">{getEasterEggQuote()}</span>
               </div>
             </CardDescription>
@@ -250,7 +249,7 @@ export default function LeaderBoardPage({
                         </TableHead>
                         <TableHead>Participant</TableHead>
                         <TableHead className="text-center">Score</TableHead>
-                        <TableHead className="hidden md:table-cell text-right">
+                        <TableHead className="hidden md:table-cell text-center">
                           Last Submission
                         </TableHead>
                       </TableRow>
@@ -305,15 +304,21 @@ export default function LeaderBoardPage({
                             <TableCell className="text-center">
                               {participant.score}
                             </TableCell>
-                            <TableCell className="hidden md:table-cell text-right">
-                              {new Date(
-                                participant.last_submission_at
-                              ).toLocaleString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                hour: "numeric",
-                                minute: "numeric",
-                              })}
+                            <TableCell className={`hidden md:table-cell ${participant.last_submission_at ? 'text-center' :'text-center'}`}>
+                              {participant.last_submission_at ? (
+                                new Date(
+                                  participant.last_submission_at
+                                ).toLocaleString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                })
+                              ) : (
+                                <span className="text-gray-400 text-center ">
+                                  N/A
+                                </span>
+                              )}
                             </TableCell>
                           </TableRow>
                         );

@@ -94,9 +94,9 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
         e.ctrlKey && e.shiftKey && e.key === "I",
         e.ctrlKey && e.shiftKey && e.key === "J",
         e.ctrlKey && e.shiftKey && e.key === "K",
-        e.altKey,
+        // e.altKey,
         e.ctrlKey && e.key === "u",
-        e.altKey && e.key === "u",
+        // e.altKey && e.key === "u",
         // Print screen / screen capture
         e.key === "PrintScreen",
         // Prevent saving the page
@@ -186,7 +186,7 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
     // Detect window resize (potential dev tools opening)
     const handleResize = (): void => {
       const widthDifference = Math.abs(window.innerWidth - windowWidth);
-      const heightDifference = Math.abs(window.innerHeight - windowHeight);
+    const heightDifference = Math.abs(window.innerHeight - windowHeight);
 
       // If the window size changed significantly, it might be dev tools
       if (widthDifference > 100 || heightDifference > 100) {
@@ -244,8 +244,8 @@ const AntiCheatProtection: React.FC<AntiCheatProtectionProps> = ({
       if (strictMode) {
         const startTime = performance.now();
         // Using console.log can trigger a break in execution if dev tools are open
-        //console.log("");
-        //console.clear();
+        console.log("");
+        console.clear();
         const endTime = performance.now();
 
         // If execution took longer than expected, dev tools might be open
