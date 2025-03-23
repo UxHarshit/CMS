@@ -22,7 +22,7 @@ interface TestCase {
 export default function EditProblemPage({ props, baseUrl }: { props: any, baseUrl : string }) {
     const { name, email, image, username, isAdmin } = props.data;
     const { toast } = useToast();
-    
+
 
     const [question, setQuestion] = useState({
         title: "",
@@ -37,7 +37,7 @@ export default function EditProblemPage({ props, baseUrl }: { props: any, baseUr
         memory_limit: 0,
     });
     const [testCases, setTestCases] = useState<TestCase[]>([]);
-  
+
 
 
     function preventDefault(e: React.FormEvent<HTMLFormElement>) {
@@ -61,7 +61,7 @@ export default function EditProblemPage({ props, baseUrl }: { props: any, baseUr
         setTestCases(testCases);
     }, []);
 
- 
+
 
     function handleSubmit() {
         const token = localStorage.getItem("token");
@@ -85,9 +85,9 @@ export default function EditProblemPage({ props, baseUrl }: { props: any, baseUr
             isPublic: true,
             points: 0
         });
-        
 
-    
+
+
 
         fetch(`${baseUrl}/api/problems/${id}`, {
             method: "PUT",
@@ -274,7 +274,7 @@ export default function EditProblemPage({ props, baseUrl }: { props: any, baseUr
                                                         points: 0
                                                     }])
                                                 }
-                                                
+
                                                 console.log(testCases)
                                             }}>
                                                 <Plus className="w-4 h-4" />
@@ -295,10 +295,10 @@ export default function EditProblemPage({ props, baseUrl }: { props: any, baseUr
                                                             onClick={() => {
                                                                 const newTestCases = [...testCases];
                                                                 // add the test case to the deleted test cases array
-                                                                
+
                                                                 newTestCases.splice(index, 1); // remove the test case from the array
                                                                 setTestCases(newTestCases);
-                                                                
+
                                                             }}>
                                                             <Trash2 className="w-4 h-4" />
                                                         </Button>

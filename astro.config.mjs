@@ -23,12 +23,12 @@ export default defineConfig({
   ), react(), partytown(), 
   sitemap({
     filter : (page)=> 
-      page !== 'https://codecontestpro.tech/admin/'
-      && page !== 'https://codecontestpro.tech/admin'
-      && page !== 'https://codecontestpro.tech/contest/'
-      && page !== 'https://codecontestpro.tech/contest'
-      && page !== 'https://codecontestpro.tech/problems/'
-      && page !== 'https://codecontestpro.tech/problems'
+      !page.startsWith('https://codecontestpro.tech/contest/')
+      && !page.startsWith('https://codecontestpro.tech/admin/')
+      && !page.startsWith('https://codecontestpro.tech/problems/')
+      && !page.startsWith('https://codecontestpro.tech/contest')
+      && !page.startsWith('https://codecontestpro.tech/problems')
+      && !page.startsWith('https://codecontestpro.tech/admin')
   })
 ],
   output: 'server',

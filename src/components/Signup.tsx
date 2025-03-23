@@ -175,6 +175,12 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
       return;
     }
 
+    if (!email.includes("@liet.in")) {
+      setError("Please use your institution or organization email address");
+      setLoading(false);
+      return;
+    }
+
     setError("");
 
     await fetch(`${baseUrl}/api/auth/register`, {
@@ -391,7 +397,7 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
                 </div>
               </div>
               {error && <p className="text-red-500 text-sm">{error}</p>}
-              
+
               <HCaptcha
                 sitekey="61ca8d04-a6d6-45b8-97a4-a66e3b1401e2"
                 onVerify={(token, ekey) =>
@@ -435,7 +441,7 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
                       Register
                     </Button>
                   )}
-      
+
             </form>
           </CardContent>
           <CardFooter>

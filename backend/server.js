@@ -32,11 +32,20 @@ app.use('/robots.txt', function (req, res, next) {
   });
 
 
+app.get('/heavy', (req, res) => {
+    let total = 0;
+    for(let i = 0; i < 50_000_000; i++) {
+        total += i;
+    }
+    res.send(total.toString());
+});
+
+
 app.use((req, res, next) => {
 
     if (req.ip === '::1' || req.ip === '::ffff:127.0.0.1' || req.ip === '::ffff:172.17.0.1') {
         return next();
-    }    
+    }
 
     const logEntry = {
         event_type: 'request',
@@ -51,7 +60,7 @@ app.use((req, res, next) => {
         })
     }
     saveLog(logEntry);
-    
+
     next();
 });
 
