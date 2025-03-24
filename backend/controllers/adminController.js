@@ -78,15 +78,13 @@ const addProblemController = async (req, res) => {
             memory_limit: questionData.memory_limit,
         }, { transaction });
 
-        const testCases = await TestCases.create({
+        await TestCases.create({
             problemId: problem.id,
             input: questionData.public_test_cases.input,
             output: questionData.public_test_cases.output,
             isPublic: true,
             points: 0
         }, { transaction });
-
-        console.log(questionData.test_cases);
 
         for (const testCase of questionData.test_cases) {
             await TestCases.create({
