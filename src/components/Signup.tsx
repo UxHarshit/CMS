@@ -226,12 +226,12 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
       {/* Header */}
       <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
+          <a href="/" className="flex items-center space-x-2">
             <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             <span className="text-xl font-bold text-gray-800 dark:text-white">
               CodeContest Pro
             </span>
-          </div>
+          </a>
           <div className="hidden items-center md:flex space-x-4">
             <a
               href="/"

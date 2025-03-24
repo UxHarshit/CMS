@@ -16,10 +16,25 @@ const { title, description = "CodeContestPro", ogImage } = Astro.props;
 <meta charset="utf-8" />
 <meta name="robots" content="index, follow" />
 <meta name="goglebot" content="index, follow" />
+<meta name="bingbot" content="index, follow" />
+<meta name="yandex" content="index, follow" />
+<meta name="referrer" content="no-referrer-when-downgrade" />
+
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="generator" content={Astro.generator} />
 <link rel="canonical" href={canonicalURL} />
-<link rel="shortcut icon" type="image/svg+xml" href=`${Astro.site}favicon.svg` />
+<!-- favicon.ico -->
+<link rel="icon" type="image/x-icon" href=`${Astro.site}favicon.ico` />
+<!-- Shortcut ico -->
+<link rel="shortcut icon" type="image/x-icon" href=`${Astro.site}favicon.ico` />
+<!-- Android -->
+<link rel="icon" type="image/png" sizes="192x192" href=`${Astro.site}android-chrome-192x192.png` />
+<link rel="icon" type="image/png" sizes="512x512" href=`${Astro.site}android-chrome-512x512.png` />
+<link rel="icon" type="image/png" sizes="32x32" href=`${Astro.site}favicon-32x32.png` />
+<link rel="icon" type="image/png" sizes="16x16" href=`${Astro.site}favicon-16x16.png` />
+<link rel="manifest" href=`${Astro.site}site.webmanifest` />
+<link rel="apple-touch-icon" sizes="180x180" href=`${Astro.site}apple-touch-icon.png` />
+
 <title>{title}</title>
 <meta name="description" content={description} />
 

@@ -7,11 +7,8 @@ const userListController = async (req, res) => {
 
     const { rangeStart, rangeEnd } = req.body;
     const users = await User.findAll({
-        where: {
-            id: {
-                [Op.between]: [rangeStart, rangeEnd]
-            }
-        },
+        limit: rangeEnd,
+        offset: rangeStart,
         include: [{
             as: 'profile',
             model: UserProfile,
@@ -33,11 +30,8 @@ const userListController = async (req, res) => {
 const problemListController = async (req, res) => {
     const { rangeStart, rangeEnd } = req.body;
     const problems = await Problems.findAll({
-        where: {
-            id: {
-                [Op.between]: [rangeStart, rangeEnd]
-            }
-        }
+        limit: rangeEnd,
+        offset: rangeStart
     });
     const structuredProblems = problems.map(problem => {
         return {
@@ -128,11 +122,8 @@ const getAllContest = async (req, res) => {
     try {
         const { rangeStart, rangeEnd } = req.body;
         const contests = await Contests.findAll({
-            where: {
-                id: {
-                    [Op.between]: [rangeStart, rangeEnd]
-                },
-            },
+            limit: rangeEnd,
+            offset: rangeStart,
             include: [{
                 model: Institution,
                 as: 'institution',
