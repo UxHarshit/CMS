@@ -2,29 +2,33 @@ import nodemailer from "nodemailer";
 import createMail from "../helpers/createMailTemplate.js";
 
 const transporter = nodemailer.createTransport({
-    host: 'live.smtp.mailtrap.io',
-    port: 2525,
+    host: 'email-smtp.ap-south-1.amazonaws.com',
+    port: 2587,
     // name: 'codecontestpro.tech',
     domain: 'codecontestpro.tech',
     secure: false,
     auth: {
-        user: "api",
+        user: "AKIARJIZZM5YZ3DI7A6S",
         pass: process.env.SERVER_MAIL_PASSWORD
     }
 })
 
-const sendMailCustom = async (recipient, subject, body) => {
+const sendMailCustom = async (recipient, subject, body, cc = "", bcc = "") => {
     const mailOptions = {
         from: `CC Pro <${process.env.SERVER_MAIL}>`,
         to: recipient,
         subject: subject,
         html: createMail(body),
+        text: body.replace(/<[^>]*>/g, ''), // Remove HTML tags
+        cc: cc || undefined,
+        bcc : bcc || undefined
     }
 
     try {
         await transporter.sendMail(mailOptions);
         return true;
     } catch (error) {
+        console.error(error);
         return false;
     }
 }
