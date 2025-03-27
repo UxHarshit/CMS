@@ -3,70 +3,47 @@ import { Problems, Contest_Problems, Contests, TestCases, Submissions, Contest_P
 import getLanguageTime from '../helpers/getLanguageTime.js';
 import sequelize from '../config/database.js';
 import crypto from 'crypto';
+import Queue from 'bull';
+
 
 
 const JUDGE0_API = "http://139.59.69.105:2358/submissions";
 const toBase64 = (str) => Buffer.from(str).toString("base64");
 
-
 const runProblemController = async (req, res) => {
-    const { language_id, code, stdin } = req.body;
 
-    if (!language_id || !code) {
-        return res.status(400).json({ message: 'Please provide language_id and code' });
+    const { language_id, code, stdin, contestId, problemId } = req.body;
+
+    if (!language_id || !code || !contestId || !problemId) {
+        return res.status(400).json({ message: 'Missing required parameters' });
     }
 
-    const { contestId, problemId } = req.body;
-
-    if (!contestId || !problemId) {
-        return res.status(400).json({ message: 'Please provide contestId and problemId' });
-    }
 
     try {
-        const isContestProblem = await Contest_Problems.findOne({
-            where: {
-                contestId,
-                problemId,
-            },
-        });
 
-        if (!isContestProblem) {
-            return res.status(400).json({ message: 'Problem is not in the contest' });
+        const [isContestProblem, contest, problem, testCases] = await Promise.all([
+            Contest_Problems.findOne({ where: { contestId, problemId } }),
+            Contests.findOne({ where: { id: contestId } }),
+            Problems.findOne({ where: { id: problemId } }),
+            TestCases.findAll({ where: { problemId, isPublic: true } })
+        ])
+
+        if (!isContestProblem, !contest, !problem) {
+            return res.status(404).json({ message: 'Invalid contest or problem' });
         }
 
-        const contest = await Contests.findOne({ where: { id: contestId } });
-
-        if (!contest) {
-            return res.status(400).json({ message: 'Contest not found' });
-        }
-
-        const endDate = new Date(contest.endDate);
-        const currentDate = new Date();
-
-        if (endDate < currentDate) {
+        if (contest.endDate.getTime() < new Date().getTime()) {
             return res.status(400).json({ message: 'Contest has ended', errCode: 'end01' });
         }
 
-        const problem = await Problems.findOne({ where: { id: problemId } });
-
-        if (!problem) {
-            return res.status(400).json({ message: 'Problem not found' });
-        }
-
-        var { title, time_limit, memory_limit } = problem;
-
-        time_limit = getLanguageTime(language_id, time_limit);
-        memory_limit *= 1024;
-
-        const testCases = await TestCases.findAll({ where: { problemId, isPublic: true } });
-        const inputs = testCases.map(testCase => testCase.input);
-        const outputs = testCases.map(testCase => testCase.output);
+        const time_limit = getLanguageTime(language_id, problem.time_limit);
+        const memory_limit = problem.memory_limit * 1024;
 
         const data = {
             language_id,
             source_code: code,
-            stdin: inputs.join('\n'),
-            expected_output: outputs.join('\n'),
+            stdin: testCases.map(testCase => testCase.input).join('\n'),
+            expected_output: testCases.map(testCase => testCase.output).join('\n'),
             encode: true,
             cpu_time_limit: time_limit,
             memory_limit,
@@ -77,9 +54,10 @@ const runProblemController = async (req, res) => {
 
         // poll for the result
         const token = response.data.token;
-        let result = null;
+        let result;
 
-        while (true) {
+        for (let i = 0; i < 10; i++) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
             const resultResponse = await axios.get(`${JUDGE0_API}/${token}?base64_encoded=true`);
             result = resultResponse.data;
 
@@ -88,6 +66,9 @@ const runProblemController = async (req, res) => {
             }
         }
 
+        if (result.status.id <= 2) {
+            return res.status(400).json({ message: 'Timeout try again' });
+        }
 
         res.status(200).json({
             message: result.status.description,
@@ -95,7 +76,7 @@ const runProblemController = async (req, res) => {
             time: result.time,
             stdout: result.stdout,
             compile_output: result.compile_output,
-            expected_output: outputs.join('\n'),
+            expected_output: testCases.map(testCase => testCase.output).join('\n'),
             data: result
         });
 
@@ -187,6 +168,8 @@ function generateUidFromTokens(tokens) {
     hash.update(tokens.join(',')); // Convert array to string and hash it
     return hash.digest('hex').substring(0, 16); // Take first 16 chars for a short UID
 }
+
+
 
 const submitProblemController = async (req, res) => {
     try {
