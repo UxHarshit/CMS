@@ -1,6 +1,7 @@
 import { Code, Menu, Moon, ShieldCheck, Sun, Trophy, Users, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
+import Footer from "./footer";
 
 export default function Landing({isLoggedIn}: {isLoggedIn: boolean}) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -36,7 +37,7 @@ export default function Landing({isLoggedIn}: {isLoggedIn: boolean}) {
         if (savedDarkMode) {
             setDarkMode(JSON.parse(savedDarkMode));
         }
-       
+
     }, []);
 
 
@@ -56,10 +57,10 @@ export default function Landing({isLoggedIn}: {isLoggedIn: boolean}) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+        <div className="min-h-screen  transition-colors duration-300">
 
             {/* Header */}
-            <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
+            <header className="fixed w-full backdrop-blur-sm  shadow-sm z-10">
                 <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -92,7 +93,7 @@ export default function Landing({isLoggedIn}: {isLoggedIn: boolean}) {
                     </div>
                 </nav>
                 {/* Mobile Menu */}
-                <div className={`md:hidden bg-white dark:bg-gray-800 overflow-hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-52' : 'max-h-0'}`}>
+                <div className={`md:hidden backdrop-blur-lg  overflow-hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-52 bg-background ' : 'max-h-0'}`}>
                     <a href="#features" className="block px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200" onClick={toggleMobileMenu}>Features</a>
                     <a href="#pricing" className="block px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200" onClick={toggleMobileMenu}>Pricing</a>
                     <a href="#contact" className="block px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200" onClick={toggleMobileMenu}>Contact</a>
@@ -166,11 +167,7 @@ export default function Landing({isLoggedIn}: {isLoggedIn: boolean}) {
                     </a>
                 </div>
             </section>
-            <footer className="bg-white dark:bg-gray-800 py-8">
-                <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-                    <p>&copy; 2025 CodeContest Pro. All rights reserved.</p>
-                </div>
-            </footer>
+            <Footer/>
         </div>
     )
 }

@@ -270,7 +270,9 @@ export default function LeaderBoardPage({
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center space-x-3">
+                              <a
+                                href={`/profile/${participant.username}`}
+                               className="flex items-center space-x-3">
                                 <Avatar>
                                   <AvatarImage
                                     src={participant.image}
@@ -299,7 +301,7 @@ export default function LeaderBoardPage({
                                     @{participant.username}
                                   </div>
                                 </div>
-                              </div>
+                              </a>
                             </TableCell>
                             <TableCell className="text-center">
                               {participant.score}

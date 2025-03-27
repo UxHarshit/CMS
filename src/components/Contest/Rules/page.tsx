@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Nav from "./nav";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import Footer from "@/components/footer";
 
 export default function RulesPage({
   message,
@@ -78,7 +79,7 @@ export default function RulesPage({
 
   return (
     <>
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+      <div className="min-h-screen transition-colors duration-300 ease-in-out">
         <Toaster />
         <Nav name={name} email={email} image={image} username={username} />
 
@@ -120,11 +121,7 @@ export default function RulesPage({
         </div>
       </div>
 
-      <footer className="bg-white dark:bg-gray-800 py-8">
-        <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-          <p>&copy; 2024 CodeContest Pro. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer/>
     </>
   );
 }

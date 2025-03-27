@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 import { Badge } from './ui/badge';
 import { jwtDecode } from 'jwt-decode';
+import Footer from './footer';
 
 interface User {
   username: string;
@@ -29,11 +30,12 @@ export default function Profile({ user }: { user: User }) {
     joinDate: "December 2024",
     bio: "Passionate coder and problem solver. Always eager to learn and take on new challenges.",
     achievements: ["DSA Master", "100 Day Coding Streak", "Top Contributor"],
-    recentContests: [
-      { name: "Global Coding Challenge 2024", rank: 5 },
-      { name: "Algorithm Showdown", rank: 1 },
-      { name: "Data Structures Duel", rank: 3 },
-    ],
+    // recentContests: [
+    //   { name: "Global Coding Challenge 2024", rank: 5 },
+    //   { name: "Algorithm Showdown", rank: 1 },
+    //   { name: "Data Structures Duel", rank: 3 },
+    //]
+    recentContests : []
   }
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -100,10 +102,10 @@ export default function Profile({ user }: { user: User }) {
     setMobileMenuOpen(!mobileMenuOpen);
   }
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+    <div className="min-h-screen transition-colors duration-300 ease-in-out">
 
       {/* Header */}
-      <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
+      <header className="fixed w-full backdrop-blur-sm  shadow-sm z-10">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -214,27 +216,21 @@ export default function Profile({ user }: { user: User }) {
             </CardHeader>
             <CardContent>
               <ul className="space-y-4">
-                {data.recentContests.map((contest, index) => (
+                {data.recentContests && data.recentContests.length > 0  ? data.recentContests.map((contest , index) => (
                   <li key={index} className="flex items-center justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">{contest.name}</span>
+                    <span className="text-gray-600 dark:text-gray-300">{contest["name"]}</span>
                     <Badge variant="secondary">
-                      Rank: {contest.rank}
+                      Rank: {contest["rank"]}
                     </Badge>
                   </li>
-                ))}
+                )) : <p>No recent contests</p>}
               </ul>
             </CardContent>
           </Card>
         </div>
       </div>
 
-
-      <footer className="bg-white dark:bg-gray-800 py-8">
-        <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-          <p>&copy; 2024 CodeContest Pro. All rights reserved.</p>
-        </div>
-      </footer>
+    <Footer/>
     </div>
   )
 }
-

@@ -8,7 +8,7 @@ export default function Admin({ props }: { props: any }) {
     const { curr_ram_usage, total_ram, cpu_usage } = props.sysinfo;
     return (
         <>
-            <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+            <div className="min-h-screen transition-colors duration-300 ease-in-out">
 
                 {/* Header */}
                 <Nav name={name} email={email} image={image} username={username} isAdmin={isAdmin} />

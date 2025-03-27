@@ -36,7 +36,7 @@ export default function Nav({ name, email, image, username }: { name: string, em
 
     return (
         <>
-            <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
+            <header className="fixed w-full backdrop-blur-sm  shadow-sm z-10">
                 <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />

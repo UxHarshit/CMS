@@ -28,6 +28,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
+import Footer from "@/components/footer";
 
 interface Problem {
   id: number;
@@ -114,7 +115,9 @@ export default function ProblemPage(props: {
               setUsername(data.username);
               setQuestions(data.problems);
             } else if (res.status === 404) {
-              window.location.href = "/dashboard";
+              window.location.replace("/dashboard");
+            } else if (res.status == 400) {
+              window.location.replace("/dashboard");
             } else {
               if (data.errCode === "disqualified") {
                 window.location.replace("/dashboard");
@@ -124,9 +127,9 @@ export default function ProblemPage(props: {
           .catch((err) => {
             const errCode = err.errCode;
             if (errCode === "end01") {
-              window.location.href = "/contest/" + contestId + "/leaderboard";
+              window.location.replace("/contest/" + contestId + "/leaderboard");
             } else if (errCode === "notstart") {
-              window.location.href = "/dashboard";
+              window.location.replace("/dashboard");
             }
             console.error(err);
           });
@@ -309,7 +312,6 @@ export default function ProblemPage(props: {
     return Object.entries(iFinalSubmission?.data || {}); // Return original order if no AC
   };
   const handleRunCode = async () => {
-
     if (Date.now() - prevTime < 10000) {
       toast({
         title: "Slow Down",
@@ -377,7 +379,7 @@ export default function ProblemPage(props: {
       }
     } else {
       const data = await response.json();
-      if ((data.errCode = "end01")) {
+      if ((data.errCode == "end01")) {
         window.location.href =
           "/contest/" + window.location.pathname.split("/")[2] + "/leaderboard";
       } else {
@@ -586,7 +588,7 @@ export default function ProblemPage(props: {
           exitFullscreen();
           return 0;
         }
-        return prev - 1;
+        return prev;
       });
     }, 1000);
   };
@@ -602,7 +604,7 @@ export default function ProblemPage(props: {
 
   // Reset the warning (if user corrects their behavior)
   const resetWarning = () => {
-    if(cheatMethod === "Full screen exit") {
+    if (cheatMethod === "Full screen exit") {
       enterFullscreen();
       setFullscreen(true);
     }
@@ -624,7 +626,7 @@ export default function ProblemPage(props: {
       <Toaster />
 
       {!fullscreen || disqualified ? (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+        <div className="min-h-screen  transition-colors duration-300 ease-in-out">
           <div className="container mx-auto px-4 py-24">
             <Card>
               <CardHeader>
@@ -664,7 +666,8 @@ export default function ProblemPage(props: {
                   <div className="flex flex-col items-center space-y-4">
                     <TriangleAlert className="h-16 w-16 text-red-500" />
                     <p className="text-center text-lg font-bold">
-                      Your test has been terminated due to voilation of rules and regulations. <br />
+                      Your test has been terminated due to voilation of rules
+                      and regulations. <br />
                       Contact the your POC to apeal for the decision.
                     </p>
                     <p className="text-center">
@@ -688,9 +691,9 @@ export default function ProblemPage(props: {
         <div className="min-h-screen ">
           {/* Cheating Warning Overlay */}
           {cheatDetected && (
-            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+            <div className="fixed inset-0 backdrop-blur-sm  flex items-center justify-center z-50">
               <Card className="w-96 border-2 border-red-500">
-                <CardHeader className="bg-red-500 text-white">
+                <CardHeader className="bg-red-500 rounded-sm  text-white">
                   <CardTitle className="flex items-center">
                     <AlertCircleIcon className="h-8 w-8" />
                     <span className="ml-2">Warning: Voilation Detected</span>
@@ -727,7 +730,7 @@ export default function ProblemPage(props: {
 
           {/* Your actual test content goes here */}
           {fullscreen && !cheatDetected && (
-            <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+            <div className="min-h-screen  transition-colors duration-300 ease-in-out">
               <Nav
                 name={name}
                 email={email}
@@ -875,7 +878,7 @@ export default function ProblemPage(props: {
 
                   {/* Right Side */}
                   <div className="lg:col-span-2 space-y-4 max-lg:pt-4 overflow-y-auto h-[calc(100vh-6rem)] no-scrollbar ">
-                    <div className="flex justify-between items-center sticky top-0 z-[9] bg-gray-100 dark:bg-gray-900 px-4 py-2">
+                    <div className="flex justify-between items-center sticky top-0 z-[9]  px-4 py-2">
                       <Select
                         value={language}
                         onValueChange={handleLanguageChange}
@@ -920,9 +923,9 @@ export default function ProblemPage(props: {
                       </div>
                     </div>
                     <Card className="min-h-[400px]">
-                      <CardContent className="p-0">
+                      <CardContent className="p-0 rounded-none  ">
                         <Editor
-                        className="editor"
+                          className="editor  rounded-sm  "
                           height="400px"
                           language={language}
                           value={currentCode}
@@ -944,28 +947,6 @@ export default function ProblemPage(props: {
                           }}
                         />
                       </CardContent>
-                      {/* {error.length > 0 && (
-                                        <Alert variant="destructive">
-                                            <AlertCircle className='h-4 w-4' />
-                                            <AlertTitle>Syntax Errors</AlertTitle>
-                                            <AlertDescription>
-                                                <ul className='list-disc pl-5'>
-                                                    {error.map((err, index) => (
-                                                        <li key={index}>{err}</li>
-                                                    ))}
-                                                </ul>
-                                            </AlertDescription>
-                                        </Alert>
-                                    )} */}
-                      {/* { success.length > 0 && (
-                                        <Alert variant="default">
-                                            <AlertCircle className='h-4 w-4' />
-                                            <AlertTitle>Success</AlertTitle>
-                                            <AlertDescription>
-                                                {success}
-                                            </AlertDescription>
-                                        </Alert>
-                                    )} */}
                     </Card>
 
                     <div className="gap-4">
@@ -1125,13 +1106,9 @@ export default function ProblemPage(props: {
                   </div>
                 </div>
               </div>
-              <footer className="bg-white dark:bg-gray-800 py-8  mt-24">
-                <div className="container mx-auto px-4">
-                  <div className="text-center text-gray-600 dark:text-gray-300">
-                    &copy; 2025 CodeContest Pro. All rights reserved.
-                  </div>
-                </div>
-              </footer>
+              <div className="mt-24">
+                <Footer />
+              </div>
             </div>
           )}
         </div>

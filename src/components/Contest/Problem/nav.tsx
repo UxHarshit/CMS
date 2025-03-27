@@ -11,6 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogHeader,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 export default function Nav({
   name,
   email,
@@ -74,7 +84,7 @@ export default function Nav({
 
   return (
     <>
-      <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
+      <header className="fixed w-full backdrop-blur-sm shadow-sm z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -85,14 +95,34 @@ export default function Nav({
           <div className="flex items-center space-x-2">
             <div className="md:flex flex-wrap gap-2 items-center space-x-2">
               {/* Finish Contest Button */}
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  window.location.replace(`/dashboard`);
-                }}
-              >
-                Finish Contest
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive">Finish Contest</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    Are you sure you want to finish the contest?
+                    <AlertDialogDescription>
+                      Once you finish the contest, you will not be able to
+                      submit any more solutions.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          window.location.replace(`/contest/${id}/leaderboard`);
+                        }}
+                      >
+                        Finish Contest
+                      </Button>
+                    </>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               {/* Styled Timer of Contest */}
               <div className="flex flex-wrap items-center space-x-2 border border-gray-300 dark:border-gray-700 rounded-md p-2">
                 <CalendarDays className="h-4 w-4" />
