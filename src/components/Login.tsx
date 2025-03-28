@@ -4,6 +4,7 @@ import { Code, Eye, EyeOff, Menu, Moon, Sun, X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "@radix-ui/react-label";
 import { Input } from "./ui/input";
+import Footer from "./footer";
 
 export default function LoginPage({ baseUrl }: { baseUrl: string }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -125,10 +126,10 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+        <div className="min-h-screen transition-colors duration-300 ease-in-out">
 
             {/* Header */}
-            <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
+            <header className="fixed w-full backdrop-blur-sm shadow-sm z-10">
                 <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -201,14 +202,14 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
                             </div>
                             {error && <p className="text-red-500 text-sm">{error}</p>}
 
-                            {isLoading ? 
-                                <Button disabled className="w-full">Loading...</Button> 
+                            {isLoading ?
+                                <Button disabled className="w-full">Loading...</Button>
                             :
                                 <Button
                                     disabled={!enableSubmit}
                                     type="submit" className="w-full" >Login</Button>
                             }
-                                    
+
                         </form>
                     </CardContent>
                     <CardFooter>
@@ -222,11 +223,7 @@ export default function LoginPage({ baseUrl }: { baseUrl: string }) {
             </section>
 
 
-            <footer className="bg-white dark:bg-gray-800 py-8">
-                <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-                    <p>&copy; 2025 CodeContest Pro. All rights reserved.</p>
-                </div>
-            </footer>
+            <Footer/>
         </div>
     )
 }

@@ -7,7 +7,24 @@ type Props = {
 	description?: string;
 	ogImage?: URL;
 }
+const anim = {
+  old: {
+    name: "bump",
+    duration: "0.5s",
+    easing: "ease-in",
+    direction: "reverse",
+  },
+  new: {
+    name: "bump",
+    duration: "0.5s",
+    easing: "ease-in-out",
+  },
+};
 
+const customTransition = {
+  forwards: anim,
+  backwards: anim,
+};
 const props = Astro.props;
 ---
 
@@ -23,7 +40,7 @@ const props = Astro.props;
     <title>{Astro.props.title} - CC Pro</title>
     <ClientRouter />
   </head>
-  <body transition:animate="initial">
+  <body transition:animate={customTransition}>
     <slot />
   </body>
 </html>
@@ -36,10 +53,26 @@ const props = Astro.props;
     height: 100%;
     font-family: "Inter", sans-serif;
   }
-</style>
 
+</style>
+<style is:global>
+  @keyframes bump {
+    0% {
+      opacity: 0;
+      transform: scale(1) translateX(200px);
+    }
+    50% {
+      opacity: 0.5;
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateX(0);
+    }
+  }
+</style>
 <script>
-  
+
   (function () {
 
     document.addEventListener("astro:after-swap", () => {

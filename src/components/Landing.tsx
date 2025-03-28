@@ -36,6 +36,10 @@ export default function Landing({isLoggedIn}: {isLoggedIn: boolean}) {
 
         if (savedDarkMode) {
             setDarkMode(JSON.parse(savedDarkMode));
+        } else{
+            setDarkMode(true);
+            localStorage.setItem('darkMode', JSON.stringify(true));
+            document.documentElement.classList.add('dark');
         }
 
     }, []);

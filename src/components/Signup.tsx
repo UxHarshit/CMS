@@ -40,6 +40,7 @@ import {
 } from "./ui/command";
 import { cn } from "@/lib/utils";
 import { set } from "astro:schema";
+import Footer from "./footer";
 
 export default function SignupPage({ baseUrl }: { baseUrl: string }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,10 +70,9 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
     institution: { code: "", value: "" },
   });
 
-    const handleVerificationSuccess = (t: string, ekey: string) => {
-        setToken(t);
-    };
-
+  const handleVerificationSuccess = (t: string, ekey: string) => {
+    setToken(t);
+  };
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem("darkMode");
@@ -202,8 +202,7 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
         console.error(err);
         setError("An error occurred. Please try again later");
       });
-      setLoading(false);
-
+    setLoading(false);
   };
 
   const toggleDarkMode = () => {
@@ -222,9 +221,9 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
     setMobileMenuOpen(!mobileMenuOpen);
   };
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300 ease-in-out">
+    <div className="min-h-screen  transition-colors duration-300 ease-in-out">
       {/* Header */}
-      <header className="fixed w-full bg-white dark:bg-gray-800 shadow-sm z-10">
+      <header className="fixed backdrop-blur-sm  w-full shadow-sm z-10">
         <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
           <a href="/" className="flex items-center space-x-2">
             <Code className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -431,17 +430,16 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
               {loading ? (
                 <Button disabled className="w-full">
                   Registering...
-                  </Button>
-                  ) : (
-                    <Button
-                      disabled={!isTermsAccepted}
-                      type="submit"
-                      className="w-full"
-                    >
-                      Register
-                    </Button>
-                  )}
-
+                </Button>
+              ) : (
+                <Button
+                  disabled={!isTermsAccepted}
+                  type="submit"
+                  className="w-full"
+                >
+                  Register
+                </Button>
+              )}
             </form>
           </CardContent>
           <CardFooter>
@@ -458,11 +456,7 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
         </Card>
       </section>
 
-      <footer className="bg-white dark:bg-gray-800 py-8">
-        <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-          <p>&copy; 2025 CodeContest Pro. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

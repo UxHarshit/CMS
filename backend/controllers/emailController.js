@@ -1,39 +1,76 @@
 import nodemailer from "nodemailer";
+import AWS from 'aws-sdk';
 import createMail from "../helpers/createMailTemplate.js";
 
-const transporter = nodemailer.createTransport({
-    host: 'email-smtp.ap-south-1.amazonaws.com',
-    port: 2587,
-    // name: 'codecontestpro.tech',
-    domain: 'codecontestpro.tech',
-    secure: false,
-    auth: {
-        user: "AKIARJIZZM5YZ3DI7A6S",
-        pass: process.env.SERVER_MAIL_PASSWORD
-    }
+// const transporter = nodemailer.createTransport({
+//     host: 'email-smtp.ap-south-1.amazonaws.com',
+//     port: 2587,
+//     // name: 'codecontestpro.tech',
+//     domain: 'codecontestpro.tech',
+//     secure: false,
+//     auth: {
+//         user: "AKIARJIZZM5YZ3DI7A6S",
+//         pass: process.env.SERVER_MAIL_PASSWORD
+//     }
+// })
+
+const ses = new AWS.SES({
+    region:'ap-south-1',
+    accessKeyId: "AKIARJIZZM5Y7EWUWRZ7",
+    secretAccessKey: "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",
 })
 
-const sendMailCustom = async (recipient, subject, body, cc = "", bcc = "") => {
-    const mailOptions = {
-        from: `CC Pro <${process.env.SERVER_MAIL}>`,
-        to: recipient,
-        subject: subject,
-        html: createMail(body),
-        text: body.replace(/<[^>]*>/g, ''), // Remove HTML tags
-        cc: cc || undefined,
-        bcc : bcc || undefined
-    }
+// const sendMailCustom = async (recipient, subject, body, cc = "", bcc = "") => {
+//     const mailOptions = {
+//         from: `CC Pro <${process.env.SERVER_MAIL}>`,
+//         to: recipient,
+//         subject: subject,
+//         html: createMail(body),
+//         text: body.replace(/<[^>]*>/g, ''), // Remove HTML tags
+//         cc: cc || undefined,
+//         bcc : bcc || undefined
+//     }
 
-    try {
-        await transporter.sendMail(mailOptions);
+//     try {
+//         await transporter.sendMail(mailOptions);
+//         return true;
+//     } catch (error) {
+//         console.error(error);
+//         return false;
+//     }
+// }
+
+
+const sendMailCustom = async (recipient, subject, body, cc = "", bcc = "") => {
+    const params = {
+        Source: `CC Pro <${process.env.SERVER_MAIL}>`,
+        Destination: {
+            ToAddresses: [recipient],
+            CcAddresses: cc ? [cc] : undefined,
+            BccAddresses: bcc ? [bcc] : undefined
+        },
+        Message: {
+            Subject : {
+                Data: subject
+            },
+            Body: {
+                Html : {
+                    Data : createMail(body),
+                },
+                Text : {
+                    Data : body.replace(/<[^>]*>/g, ''), // Remove HTML tags
+                },
+            },
+        },
+    };
+    try{
+        await ses.sendEmail(params).promise();
         return true;
     } catch (error) {
         console.error(error);
         return false;
     }
 }
-
-
 const sendMail = async (req, res) => {
     const { recipient, subject, body } = req.body;
 

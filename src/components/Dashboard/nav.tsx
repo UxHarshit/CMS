@@ -19,7 +19,7 @@ export default function Nav({ name, email, image, username, isAdmin }: { name: s
 
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
-        localStorage.setItem('darkMode', `${!darkMode}`);
+        localStorage.setItem('darkMode', `${darkMode}`);
         if (darkMode) {
             document.documentElement.classList.remove('dark');
         } else {
