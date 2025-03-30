@@ -588,7 +588,7 @@ export default function ProblemPage(props: {
           exitFullscreen();
           return 0;
         }
-        return prev;
+        return prev - 1;
       });
     }, 1000);
   };

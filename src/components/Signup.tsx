@@ -39,7 +39,6 @@ import {
   CommandList,
 } from "./ui/command";
 import { cn } from "@/lib/utils";
-import { set } from "astro:schema";
 import Footer from "./footer";
 
 export default function SignupPage({ baseUrl }: { baseUrl: string }) {
