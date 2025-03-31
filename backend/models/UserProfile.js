@@ -59,13 +59,13 @@ UserProfile.init(
   {
     sequelize,
     modelName: 'UserProfile',
-    hooks: {
-      beforeCreate: async (profile) => {
-        if (!profile.location) {
-          profile.location = await fetchUserLocation();
-        }
-      },
-    },
+    // hooks: {
+    //   beforeCreate: async (profile) => {
+    //     if (!profile.location) {
+    //       profile.location = await fetchUserLocation();
+    //     }
+    //   },
+    // },
   }
 );
 

@@ -33,7 +33,7 @@ const resendVerificationController = async (req, res) => {
 
         var verifyMail = await VerifyMail.findOne({ where: { userId: user.id } });
 
-        if (verifyMail && new Date() - verifyMail.createdAt < 300000) { 
+        if (verifyMail && new Date() - verifyMail.createdAt < 300000) {
             return res.status(400).json({ message: 'Verification mail already sent', code: "ALREADY_SENT" });
         }
 
@@ -41,10 +41,43 @@ const resendVerificationController = async (req, res) => {
         const token = await generateToken(user);
         const verifyLink = `${process.env.CLIENT_URL}/verify/${token}`;
 
-        var mailBody = `Hello ${user.name},<br><br>`;
-        mailBody += `You recently signed up for an account on CC Pro. To complete the registration process, you need to verify your email address.<br><br>`;
-        mailBody += `Click the following link to verify your account: <a href="${verifyLink}">${verifyLink}</a>`;
-        mailBody += `<br><br>Don't share this link with anyone. If you didn't request this, ignore this mail.`;
+        const mailBody = `
+        <p>Hello ${user.name},</p>
+        <p>Thank you for signing up for <strong>CC Pro</strong>. Please verify your email address to activate your account.</p>
+
+        <p style="text-align: center;">
+            <a href="${verifyLink}" style="
+                display: inline-block;
+                background-color: #007BFF;
+                color: #ffffff;
+                padding: 12px 24px;
+                font-size: 16px;
+                font-weight: bold;
+                text-decoration: none;
+                border-radius: 6px;
+                box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+                transition: background-color 0.3s ease-in-out;
+            " onmouseover="this.style.backgroundColor='#0056b3'" onmouseout="this.style.backgroundColor='#007BFF'">
+                Verify My Account
+            </a>
+        </p>
+
+        <p>If the button above does not work, you can also click the following link:</p>
+        <p><a href="${verifyLink}">${verifyLink}</a></p>
+
+        <p>This link is valid for 24 hours. If you did not request this, please ignore this email.</p>
+
+        <br>
+        <p>Best regards,<br><strong>CC Pro Team</strong></p>
+        <br>
+        <hr>
+        <p style="font-size: 12px; color: #888888;">
+            This email was sent from <a href="https://codecontestpro.tech">codecontestpro.tech</a>.
+            If you need any assistance, please contact us at
+            <a href="mailto:contact@codecontestpro.tech">contact@codecontestpro.tech</a>.
+        </p>
+    `;
+
         const mailSent = await sendMailCustom(user.email, 'Verify your account', mailBody);
 
         if (!mailSent) {
@@ -54,7 +87,7 @@ const resendVerificationController = async (req, res) => {
         if (verifyMail) {
             await verifyMail.update({ createdAt: new Date() });
         } else {
-            await VerifyMail.create({ userId: user.id , token: token , expiry : new Date() + 86400000 });
+            await VerifyMail.create({ userId: user.id, token: token, expiry: new Date() + 86400000 });
         }
 
         return res.status(200).json({ message: 'Verification mail sent', code: "MAIL_SENT" });
@@ -67,7 +100,7 @@ const resendVerificationController = async (req, res) => {
 }
 
 const verifyMailController = async (req, res) => {
-    try{
+    try {
         const token = req.body.token;
         if (!token) {
             return res.status(400).json({ message: 'Token not provided', code: "TOKEN_NOT_PROVIDED" });
@@ -95,7 +128,7 @@ const verifyMailController = async (req, res) => {
             return res.status(400).json({ message: 'User already verified', code: "ALREADY_VERIFIED" });
         }
         await profile.update({ isVerified: true });
-        await verifyMail.destroy();
+        //await verifyMail.destroy();
         return res.status(200).json({ message: 'User verified', code: "USER_VERIFIED" });
 
     } catch (error) {
@@ -103,7 +136,7 @@ const verifyMailController = async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 }
-    
-    
-        
+
+
+
 export { resendVerificationController, verifyMailController };

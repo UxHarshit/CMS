@@ -23,6 +23,12 @@ const registerController = async (req, res) => {
     if (!captchaResponse.data.success) {
       return res.status(400).json({ message: 'Failed captcha verification.' });
     }
+    var ip =  req.ip;
+    ip = ip.split(":").pop() || ip;
+    ip = ip.trim().replace('::ffff:', '');
+    
+    const ipinfo = await axios.get(`https://ipapi.co/${ip}/json/`);
+    const location = ipinfo.data['city'] + ', ' + ipinfo.data['region'] + ', ' + ipinfo.data['country_name'];
 
     const transaction = await sequelize.transaction(); // Start transaction
 
@@ -54,6 +60,7 @@ const registerController = async (req, res) => {
         username,
         name,
         email,
+        location : location || 'Unknown',
         institutionId: existingInstitution.id,
         password: await bcrypt.hash(password, 10),
       }, { transaction });
