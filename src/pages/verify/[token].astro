@@ -6,7 +6,7 @@ import VerifyPage from "@/components/Verify.tsx";
 const baseUrl = import.meta.env.REACT_APP_BASE_URL;
 var success = false;
 
-await fetch(`${baseUrl}/api/auth/verify/mail`, {
+var message = await fetch(`${baseUrl}/api/auth/verify/mail`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -22,14 +22,17 @@ await fetch(`${baseUrl}/api/auth/verify/mail`, {
     } else {
         success = false;
     }
+    return data.message;
   })
   .catch((error) => {
     success = false;
+    return error.message;
   });
 
 if (success) {
     return Astro.redirect("/login");
 }
+
 ---
 
 <Layout title="Verify Mail">
@@ -40,8 +43,8 @@ if (success) {
         </div>
     ) : (
         <div class="text-center">
-            <h1>Mail Verification Failed</h1>
-            <p>Try again</p>
+            <h1>Something is off</h1>
+            <p>Reason : <span class="text-red-500">{message}</span></p>
         </div>
     )}
 </Layout>
