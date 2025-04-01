@@ -7,7 +7,7 @@ import Queue from 'bull';
 
 
 
-const JUDGE0_API = "http://139.59.69.105:2358/submissions";
+const JUDGE0_API = "http://156.67.110.226:2358/submissions";
 const toBase64 = (str) => Buffer.from(str).toString("base64");
 
 const runProblemController = async (req, res) => {

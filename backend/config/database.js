@@ -2,7 +2,7 @@
 import { Sequelize } from 'sequelize';
 
 const sequelize = new Sequelize('cms_db', 'cms_user', 'Password@7890', {
-  host: '139.59.69.105',
+  host: '156.67.110.226',
   dialect: 'mysql',
   logging: false, // Disable logging for cleaner output
   pool: {
