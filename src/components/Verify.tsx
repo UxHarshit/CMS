@@ -28,7 +28,13 @@ import Footer from "./footer";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 
-export default function Verify({ baseUrl,pEmail }: { baseUrl: string; pEmail: string }) {
+export default function Verify({
+  baseUrl,
+  pEmail,
+}: {
+  baseUrl: string;
+  pEmail: string;
+}) {
   const { toast } = useToast();
   const [isResending, setIsResending] = useState(false);
 
@@ -367,12 +373,20 @@ export default function Verify({ baseUrl,pEmail }: { baseUrl: string; pEmail: st
                 </Button>
               </>
             ) : (
-              <Button variant="outline" asChild>
-                <a href="/">
-                  <Home className="mr-2 h-4 w-4" />
-                  Back to Home
-                </a>
-              </Button>
+              <div className="flex w-full justify-between">
+                <Button variant="outline" asChild>
+                  <a href="/">
+                    <Home className="mr-2 h-4 w-4" />
+                    Back to Home
+                  </a>
+                </Button>
+                <Button variant="outline" asChild>
+                  <a href="/logout">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Log Out
+                  </a>
+                </Button>
+              </div>
             )}
           </CardFooter>
         </Card>

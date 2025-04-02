@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Code, Ghost, Home, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import Footer from "./footer";
 
 
 export default function UserNotFound() {
@@ -119,14 +120,8 @@ export default function UserNotFound() {
 
                 </Card>
             </div>
-
-
-
-            <footer className="bg-white dark:bg-gray-800 py-8">
-                <div className="container mx-auto px-4 text-center text-gray-600 dark:text-gray-300">
-                    <p>&copy; 2024 CodeContest Pro. All rights reserved.</p>
-                </div>
-            </footer>
+            
+        <Footer/>
         </div>
     )
 }
