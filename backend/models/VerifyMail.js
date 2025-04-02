@@ -9,8 +9,12 @@ VerifyMail.init(
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        token: {
-            type: DataTypes.STRING,
+        OTP: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        resendDate: {
+            type: DataTypes.DATE,
             allowNull: false,
         },
         expiry: {

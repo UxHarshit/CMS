@@ -40,7 +40,12 @@ const isVerified = async (req, res) => {
         if (user.profile.isVerified) {
             res.status(200).send('Verified');
         } else {
-            res.status(403).send('Not Verified');
+            res.status(403).send({
+                email: user.email,
+                username: user.username,
+                message: 'User not verified',
+                code: "NOT_VERIFIED",
+            });
         }
 
     }
@@ -52,4 +57,3 @@ const isVerified = async (req, res) => {
 
 
 export { basicUserInfo, isVerified };
-

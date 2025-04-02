@@ -15,6 +15,8 @@ if (!token) {
   return Astro.redirect("/login");
 }
 
+var email = null;
+
 await fetch(`${baseUrl}/api/users/verify`, {
   method: "POST",
   headers: {
@@ -23,8 +25,13 @@ await fetch(`${baseUrl}/api/users/verify`, {
   },
 })
   .then(async (response) => {
+    data = await response.json();
     if (response.ok) {
       already_verified = true;
+    } else if(response.status === 403){
+      if(data.code === "NOT_VERIFIED"){
+        email = data.email;
+      }
     }
   })
   .catch((error) => {
@@ -37,5 +44,5 @@ if (already_verified) {
 ---
 
 <Layout title="Verify">
-  <VerifyPage baseUrl={baseUrl} client:load />
+  <VerifyPage baseUrl={baseUrl} pEmail={email!!}  client:load />
 </Layout>

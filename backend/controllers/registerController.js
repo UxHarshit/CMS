@@ -26,9 +26,9 @@ const registerController = async (req, res) => {
     var ip =  req.ip;
     ip = ip.split(":").pop() || ip;
     ip = ip.trim().replace('::ffff:', '');
-    
+
     const ipinfo = await axios.get(`https://ipapi.co/${ip}/json/`);
-    const location = ipinfo.data['city'] + ', ' + ipinfo.data['region'] + ', ' + ipinfo.data['country_name'];
+    var location = ipinfo.data['city'] + ', ' + ipinfo.data['region'] + ', ' + ipinfo.data['country_name'];
 
     const transaction = await sequelize.transaction(); // Start transaction
 
@@ -56,6 +56,10 @@ const registerController = async (req, res) => {
       const username = await generateUniqueUsername(name);
 
       // **Create User and Profile in a Single Transaction**
+      if(location == undefined || location == null || location == '') {
+        location = 'Unknown';
+      }
+
       const user = await User.create({
         username,
         name,
