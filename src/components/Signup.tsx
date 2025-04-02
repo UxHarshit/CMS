@@ -174,7 +174,7 @@ export default function SignupPage({ baseUrl }: { baseUrl: string }) {
       return;
     }
 
-    if (!email.includes("@liet.in")) {
+    if (!email.includes("@liet.in") && !email.includes("@gmail.com")) {
       setError("Please use your institution or organization email address");
       setLoading(false);
       return;
