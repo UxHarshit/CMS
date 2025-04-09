@@ -116,9 +116,7 @@ export default function ProblemPage(props: {
               setQuestions(data.problems);
             } else if (res.status === 404) {
               window.location.replace("/dashboard");
-            } else if (res.status == 400) {
-              window.location.replace("/dashboard");
-            } else {
+            }  else {
               if (data.errCode === "disqualified") {
                 window.location.replace("/dashboard");
               }
@@ -128,8 +126,6 @@ export default function ProblemPage(props: {
             const errCode = err.errCode;
             if (errCode === "end01") {
               window.location.replace("/contest/" + contestId + "/leaderboard");
-            } else if (errCode === "notstart") {
-              window.location.replace("/dashboard");
             }
             console.error(err);
           });
@@ -140,7 +136,7 @@ export default function ProblemPage(props: {
 
     fetchQuestions();
 
-    var intervalId = setInterval(fetchQuestions, 10000);
+    var intervalId = setInterval(fetchQuestions, 60000);
 
     return () => clearInterval(intervalId);
   }, []);
